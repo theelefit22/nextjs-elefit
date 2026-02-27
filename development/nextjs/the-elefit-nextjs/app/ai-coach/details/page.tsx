@@ -50,7 +50,7 @@ export default function Details() {
             {/* Desktop Center / Mobile Drawer Container */}
             <div className="relative z-10 flex flex-1 items-end md:items-center justify-center">
                 {/* Content Card / Drawer */}
-                <div className={`w-full md:max-w-md bg-[#111] rounded-t-[40px] md:rounded-[40px] border-t md:border border-white/10 px-6 pt-2 pb-12 md:pb-20 h-auto overflow-y-auto custom-scrollbar transition-transform duration-500 ease-out ${mounted ? 'translate-y-0' : 'translate-y-full md:translate-y-4'}`}>
+                <div className={`w-full md:max-w-md bg-[#0D0D0D]/80 backdrop-blur-xl rounded-t-[40px] md:rounded-[40px] border-t md:border border-white/5 px-6 pt-2 pb-12 md:pb-20 h-auto overflow-y-auto custom-scrollbar transition-transform duration-500 ease-out ${mounted ? 'translate-y-0' : 'translate-y-full md:translate-y-4'}`}>
                     {/* Drag Handle (Mobile) */}
                     <div className="flex justify-center mb-6 md:hidden sticky top-0 bg-[#111] py-2 z-20">
                         <div className="w-12 h-1 bg-white/20 rounded-full" />
@@ -61,9 +61,9 @@ export default function Details() {
                         <div className="flex items-center justify-between">
                             <button
                                 onClick={() => router.back()}
-                                className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/20 text-primary hover:bg-primary/30 transition-colors"
+                                className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-black hover:bg-primary/90 transition-all active:scale-95 shadow-[0_0_15px_rgba(204,216,83,0.3)]"
                             >
-                                <ArrowLeft className="h-5 w-5" />
+                                <ArrowLeft className="h-5 w-5 stroke-[3]" />
                             </button>
                             <span className="text-[11px] font-black text-white/40 uppercase tracking-widest">Step 2 of 4</span>
                         </div>
@@ -96,7 +96,7 @@ export default function Details() {
                                         value={formData.name}
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                         placeholder="Enter your name"
-                                        className="w-full bg-black/40 border border-[#2d2d2d] rounded-2xl p-4 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all font-medium"
+                                        className="w-full bg-[#1A1A1A]/60 backdrop-blur-md border border-white/5 rounded-2xl p-4 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-primary/30 focus:ring-1 focus:ring-primary/30 transition-all font-medium"
                                     />
                                 </div>
 
@@ -132,8 +132,8 @@ export default function Details() {
                                             type="button"
                                             onClick={() => setFormData({ ...formData, gender: 'male' })}
                                             className={`py-4 rounded-2xl border text-sm font-black transition-all ${formData.gender === 'male'
-                                                ? 'border-primary bg-primary/10 text-primary'
-                                                : 'border-[#2d2d2d] bg-black/40 text-white/40 hover:border-[#444]'
+                                                ? 'border-primary bg-primary/20 text-primary'
+                                                : 'border-white/5 bg-[#1A1A1A]/40 text-white/40 hover:border-white/10'
                                                 }`}
                                         >
                                             Male ♂️
@@ -142,8 +142,8 @@ export default function Details() {
                                             type="button"
                                             onClick={() => setFormData({ ...formData, gender: 'female' })}
                                             className={`py-4 rounded-2xl border text-sm font-black transition-all ${formData.gender === 'female'
-                                                ? 'border-primary bg-primary/10 text-primary'
-                                                : 'border-[#2d2d2d] bg-black/40 text-white/40 hover:border-[#444]'
+                                                ? 'border-primary bg-primary/20 text-primary'
+                                                : 'border-white/5 bg-[#1A1A1A]/40 text-white/40 hover:border-white/10'
                                                 }`}
                                         >
                                             Female ♀️
@@ -184,9 +184,9 @@ export default function Details() {
                                             value={formData.timelineValue}
                                             onChange={(e) => setFormData({ ...formData, timelineValue: e.target.value })}
                                             placeholder="3"
-                                            className="w-[80px] bg-black/40 border border-[#2d2d2d] rounded-2xl p-4 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all font-medium"
+                                            className="w-[80px] bg-[#1A1A1A]/60 backdrop-blur-md border border-white/5 rounded-2xl p-4 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-primary/30 focus:ring-1 focus:ring-primary/30 transition-all font-medium"
                                         />
-                                        <div className="flex flex-1 items-center rounded-2xl bg-black/40 p-1 border border-[#2d2d2d] h-[52px]">
+                                        <div className="flex flex-1 items-center rounded-2xl bg-[#1A1A1A]/60 backdrop-blur-md p-1 border border-white/5 h-[52px]">
                                             <button
                                                 type="button"
                                                 onClick={() => setFormData({ ...formData, timelineUnit: 'weeks' })}

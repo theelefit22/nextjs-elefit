@@ -106,7 +106,7 @@ export default function Signup({ onSwitchToLogin }: SignupProps) {
             setConfirmPassword('');
 
             setTimeout(() => {
-                router.push('/dashboard');
+                router.push('/profile');
             }, 2000);
         } catch (err: any) {
             const code = err.code || '';
@@ -227,6 +227,32 @@ export default function Signup({ onSwitchToLogin }: SignupProps) {
                             className="absolute right-3 top-1/2 -translate-y-1/2 text-[#454545] hover:text-white transition-colors"
                         >
                             {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                        </button>
+                    </div>
+                </div>
+
+                {/* Confirm Password */}
+                <div className="space-y-1.5">
+                    <label htmlFor="confirmPassword" className="block text-xs font-medium text-white">
+                        Confirm Password <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                        <Input
+                            id="confirmPassword"
+                            type={showConfirmPassword ? 'text' : 'password'}
+                            placeholder="Confirm your password"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            disabled={loading}
+                            required
+                            className="bg-[#0D0D0D] border-[#212121] text-white h-10 pr-10 focus:ring-primary focus:border-primary transition-all text-sm"
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#454545] hover:text-white transition-colors"
+                        >
+                            {showConfirmPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                         </button>
                     </div>
                 </div>

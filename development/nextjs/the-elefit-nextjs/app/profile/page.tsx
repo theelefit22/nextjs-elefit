@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { getUserProfile, updateUserProfile } from '@/shared/firebase';
+import { getUserProfile, updateUserProfile, getUserPlans } from '@/shared/firebase';
 import { User, ChevronDown, Download, LogOut, ChevronLeft } from 'lucide-react';
 import ProfileImageUploader from '@/components/ProfileImageUploader';
 import BottomNavNew from '@/components/BottomNavNew';
@@ -55,6 +56,7 @@ export default function ProfilePage() {
 }
 
 function ProfileContent() {
+    const router = useRouter();
     const { user: currentUser, logout } = useAuth();
     const [activeTab, setActiveTab] = useState<TabType>('profile');
     const [userData, setUserData] = useState<UserData>({
@@ -72,6 +74,8 @@ function ProfileContent() {
         healthGoals: '',
         dietaryRestrictions: '',
     });
+    const [savedPlans, setSavedPlans] = useState<any[]>([]);
+    const [loadingPlans, setLoadingPlans] = useState(false);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' | '' }>({
@@ -134,6 +138,24 @@ function ProfileContent() {
         };
         loadUserData();
     }, [currentUser]);
+
+    // Fetch saved plans when tab switches
+    useEffect(() => {
+        const loadPlans = async () => {
+            if (activeTab === 'schedules' && currentUser?.uid) {
+                try {
+                    setLoadingPlans(true);
+                    const plans = await getUserPlans(currentUser.uid);
+                    setSavedPlans(plans);
+                } catch (error) {
+                    console.error('Error loading plans:', error);
+                } finally {
+                    setLoadingPlans(false);
+                }
+            }
+        };
+        loadPlans();
+    }, [activeTab, currentUser]);
 
     const handleInputChange = (field: keyof UserData, value: string) => {
         setUserData(prev => ({ ...prev, [field]: value }));
@@ -380,6 +402,28 @@ function ProfileContent() {
                                             </div>
                                         </div>
                                     </div>
+
+                                    {/* Dietary & Allergies */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-10 mt-10">
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-bold text-[#828282]">Dietary Restrictions</label>
+                                            <textarea
+                                                className="w-full h-24 border border-[#454545] bg-[#212121] rounded-lg p-4 text-sm resize-none focus:outline-none focus:border-[#ccd853] transition-colors"
+                                                placeholder="Eg., No dairy, Vegetarian..."
+                                                value={userData.dietaryRestrictions}
+                                                onChange={(e) => handleInputChange('dietaryRestrictions', e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-bold text-[#828282]">Allergies</label>
+                                            <textarea
+                                                className="w-full h-24 border border-[#454545] bg-[#212121] rounded-lg p-4 text-sm resize-none focus:outline-none focus:border-[#ccd853] transition-colors"
+                                                placeholder="Eg., Peanuts, Shellfish..."
+                                                value={userData.allergies}
+                                                onChange={(e) => handleInputChange('allergies', e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
 
                                 {/* Save Button */}
@@ -399,9 +443,61 @@ function ProfileContent() {
                                 )}
                             </div>
                         ) : (
-                            <div className="flex flex-col items-center justify-center py-20 text-[#828282]">
-                                <Download className="w-12 h-12 mb-4 opacity-20" />
-                                <p className="text-sm font-medium">No saved schedules found.</p>
+                            <div className="space-y-6">
+                                <div className="flex items-center justify-between mb-8">
+                                    <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-[#eeeeee]">Previous Schedules</h3>
+                                    {savedPlans.length > 0 && (
+                                        <span className="text-[10px] font-bold text-[#828282] uppercase tracking-wider bg-[#212121] px-3 py-1 rounded-full">
+                                            {savedPlans.length} Total
+                                        </span>
+                                    )}
+                                </div>
+
+                                {loadingPlans ? (
+                                    <div className="flex justify-center py-20">
+                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                                    </div>
+                                ) : savedPlans.length > 0 ? (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        {savedPlans.map((plan) => (
+                                            <div
+                                                key={plan.id}
+                                                onClick={() => router.push(`/schedule?planId=${plan.id}`)}
+                                                className="group bg-[#0D0D0D] border border-[#212121] rounded-2xl p-6 hover:border-primary transition-all cursor-pointer"
+                                            >
+                                                <div className="flex items-center justify-between mb-4">
+                                                    <div className="h-10 w-10 flex items-center justify-center bg-primary/10 rounded-xl">
+                                                        <span className="text-lg">📅</span>
+                                                    </div>
+                                                    <span className="text-[10px] font-bold text-primary bg-primary/5 px-2 py-0.5 rounded-md border border-primary/20">
+                                                        {plan.calculatedData?.targetCalories || 0} kcal
+                                                    </span>
+                                                </div>
+                                                <h4 className="font-bold text-white group-hover:text-primary transition-colors line-clamp-1">{plan.name}</h4>
+                                                <p className="text-[10px] text-[#828282] mt-1 font-medium flex items-center gap-1.5 uppercase tracking-wider">
+                                                    Created {new Date(plan.createdAt?.seconds * 1000).toLocaleDateString()}
+                                                </p>
+                                                <div className="mt-6 flex items-center justify-between">
+                                                    <span className="text-[10px] font-bold text-[#828282]">{plan.calculatedData?.workoutFocus || 'GENERAL'}</span>
+                                                    <span className="text-[10px] font-bold text-primary flex items-center gap-1">
+                                                        VIEW PLAN <ChevronLeft className="w-3 h-3 rotate-180" />
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center py-20 text-[#828282]">
+                                        <Download className="w-12 h-12 mb-4 opacity-20" />
+                                        <p className="text-sm font-medium">No saved schedules found.</p>
+                                        <button
+                                            onClick={() => router.push('/ai-coach/details')}
+                                            className="mt-6 text-[10px] font-bold text-primary hover:underline border border-primary/30 px-4 py-2 rounded-xl"
+                                        >
+                                            CREATE YOUR FIRST PLAN
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>

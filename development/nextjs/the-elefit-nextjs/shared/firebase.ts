@@ -541,6 +541,53 @@ export const getAiCoachHistory = async (uid: string) => {
   }
 };
 
+/**
+ * Permanent Saved Plans Functions
+ */
+
+export const saveUserPlan = async (uid: string, planName: string, data: any) => {
+  try {
+    const docRef = doc(collection(db, "users", uid, "aiCoachSchedules"));
+    await setDoc(docRef, {
+      id: docRef.id,
+      name: planName,
+      mealPlan: data.mealPlan,
+      workoutPlan: data.workoutPlan,
+      calculatedData: data.calculatedData,
+      planGenerationDate: data.planGenerationDate || new Date().toISOString(),
+      createdAt: new Date(),
+    });
+    return docRef.id;
+  } catch (error) {
+    throw new Error(error instanceof Error ? error.message : "Failed to save plan");
+  }
+};
+
+export const getUserPlans = async (uid: string) => {
+  try {
+    const q = query(
+      collection(db, "users", uid, "aiCoachSchedules")
+    );
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+  } catch (error) {
+    throw new Error(error instanceof Error ? error.message : "Failed to fetch saved plans");
+  }
+};
+
+export const getPlanById = async (uid: string, planId: string) => {
+  try {
+    const docRef = doc(db, "users", uid, "aiCoachSchedules", planId);
+    const docSnap = await getDoc(docRef);
+    return docSnap.exists() ? docSnap.data() : null;
+  } catch (error) {
+    throw new Error(error instanceof Error ? error.message : "Failed to fetch plan detail");
+  }
+};
+
 // ============================================================
 // COMMUNITY FUNCTIONS
 // ============================================================

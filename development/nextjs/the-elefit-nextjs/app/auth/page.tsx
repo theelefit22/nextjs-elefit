@@ -27,7 +27,7 @@ function AuthContent() {
             if (redirectPath) {
                 router.replace(redirectPath);
             } else {
-                const defaultPath = userType === 'expert' ? '/expert-dashboard' : '/dashboard';
+                const defaultPath = userType === 'expert' ? '/expert-dashboard' : '/profile';
                 router.replace(defaultPath);
             }
         }

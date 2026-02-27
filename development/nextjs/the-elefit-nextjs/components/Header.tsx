@@ -39,33 +39,33 @@ export function Header() {
         <nav className="hidden md:flex items-center gap-6">
           <Link
             href="/"
-            className="px-4 py-2 text-sm font-medium text-white hover:text-primary transition-colors"
+            className="px-4 py-2 text-sm font-medium text-white hover:bg-primary hover:text-black rounded-full transition-all"
           >
             Home
           </Link>
           <Link
             href="/community"
-            className="px-4 py-2 text-sm font-medium text-white hover:text-primary transition-colors"
+            className="px-4 py-2 text-sm font-medium text-white hover:bg-primary hover:text-black rounded-full transition-all"
           >
             Community
           </Link>
           <Link
             href="/find-expert"
-            className="px-4 py-2 text-sm font-medium text-white hover:text-primary transition-colors"
+            className="px-4 py-2 text-sm font-medium text-white hover:bg-primary hover:text-black rounded-full transition-all"
           >
             Find Expert
           </Link>
 
           <Link
             href="/apply-expert"
-            className="px-4 py-2 text-sm font-medium text-white hover:text-primary transition-colors"
+            className="px-4 py-2 text-sm font-medium text-white hover:bg-primary hover:text-black rounded-full transition-all"
           >
             Apply as Expert
           </Link>
 
           <Link
             href="/ai-coach/welcome"
-            className="px-4 py-2 rounded-full bg-primary text-black text-sm font-bold hover:bg-primary/90 transition-all active:scale-95"
+            className="px-4 py-2 text-sm font-medium text-white hover:bg-primary hover:text-black rounded-full transition-all active:scale-95"
           >
             AI Coach
           </Link>
@@ -74,7 +74,7 @@ export function Header() {
             <div className="flex items-center gap-4">
               <Link
                 href="/profile"
-                className="px-4 py-2 text-sm font-medium text-white hover:text-primary transition-colors"
+                className="px-4 py-2 text-sm font-medium text-white hover:bg-primary hover:text-black rounded-full transition-all"
               >
                 Dashboard
               </Link>
@@ -89,7 +89,7 @@ export function Header() {
           ) : (
             <Link
               href="/auth"
-              className="px-4 py-2 text-sm font-medium text-white hover:text-primary transition-colors"
+              className="px-4 py-2 text-sm font-medium text-white hover:bg-primary hover:text-black rounded-full transition-all"
             >
               Login / Register
             </Link>

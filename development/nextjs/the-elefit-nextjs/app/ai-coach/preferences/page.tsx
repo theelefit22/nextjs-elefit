@@ -34,7 +34,7 @@ export default function Preferences() {
     };
 
     const activityLevels = [
-        { id: 'sedentary', label: 'Sedentary', icon: '🪑', desc: 'Little to no exercise' },
+        { id: 'sedentary', label: 'Sedentary', icon: '🛋️', desc: 'Little to no exercise' },
         { id: 'light', label: 'Light', icon: '🚶', desc: 'Exercise 1-2 days/week' },
         { id: 'moderate', label: 'Moderate', icon: '🏃', desc: 'Exercise 3-5 days/week' },
         { id: 'active', label: 'Active', icon: '💪', desc: 'Exercise 6-7 days/week' },
@@ -61,7 +61,7 @@ export default function Preferences() {
             {/* Desktop Center / Mobile Drawer Container */}
             <div className="relative z-10 flex flex-1 items-end md:items-center justify-center">
                 {/* Content Card / Drawer */}
-                <div className={`w-full md:max-w-md bg-[#111] rounded-t-[40px] md:rounded-[40px] border-t md:border border-white/10 px-6 pt-2 pb-12 md:pb-20 h-auto overflow-y-auto custom-scrollbar transition-transform duration-500 ease-out ${mounted ? 'translate-y-0' : 'translate-y-full md:translate-y-4'}`}>
+                <div className={`w-full md:max-w-md bg-[#0D0D0D]/80 backdrop-blur-xl rounded-t-[40px] md:rounded-[40px] border-t md:border border-white/5 px-6 pt-2 pb-12 md:pb-20 h-auto overflow-y-auto custom-scrollbar transition-transform duration-500 ease-out ${mounted ? 'translate-y-0' : 'translate-y-full md:translate-y-4'}`}>
                     {/* Drag Handle (Mobile) */}
                     <div className="flex justify-center mb-6 md:hidden sticky top-0 bg-[#111] py-2 z-20">
                         <div className="w-12 h-1 bg-white/20 rounded-full" />
@@ -72,9 +72,9 @@ export default function Preferences() {
                         <div className="flex items-center justify-between">
                             <button
                                 onClick={() => router.back()}
-                                className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/20 text-primary hover:bg-primary/30 transition-colors"
+                                className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-black hover:bg-primary/90 transition-all active:scale-95 shadow-[0_0_15px_rgba(204,216,83,0.3)]"
                             >
-                                <ArrowLeft className="h-5 w-5" />
+                                <ArrowLeft className="h-5 w-5 stroke-[3]" />
                             </button>
                             <span className="text-[11px] font-black text-white/40 uppercase tracking-widest">Step 3 of 4</span>
                         </div>
@@ -101,18 +101,13 @@ export default function Preferences() {
                                             key={option.id}
                                             type="button"
                                             onClick={() => setHelpType(option.id as HelpType)}
-                                            className={`relative flex flex-col items-center gap-2 rounded-2xl border p-4 transition-all ${helpType === option.id
-                                                ? 'border-primary bg-primary/10 shadow-[0_0_15px_rgba(204,216,83,0.1)]'
-                                                : 'border-[#2d2d2d] bg-black/40 hover:border-[#444]'
+                                            className={`relative flex flex-col items-center justify-center gap-3 rounded-[32px] border h-[120px] transition-all ${helpType === option.id
+                                                ? 'border-primary bg-primary/10 shadow-[0_0_20px_rgba(204,216,83,0.15)]'
+                                                : 'border-white/5 bg-[#1A1A1A]/40 hover:border-white/10'
                                                 }`}
                                         >
-                                            {option.badge && (
-                                                <span className="absolute -top-1.5 -right-1 rounded-full bg-primary px-2 py-0.5 text-[8px] font-black text-black">
-                                                    {option.badge}
-                                                </span>
-                                            )}
-                                            <span className="text-xl">{option.icon}</span>
-                                            <span className={`text-[11px] font-black uppercase tracking-tight ${helpType === option.id ? 'text-primary' : 'text-white/40'}`}>
+                                            <span className="text-3xl">{option.icon}</span>
+                                            <span className={`text-[13px] font-black tracking-tight ${helpType === option.id ? 'text-white' : 'text-white/40'}`}>
                                                 {option.label}
                                             </span>
                                         </button>
@@ -123,24 +118,28 @@ export default function Preferences() {
                             {/* Activity Level */}
                             <div className="space-y-4">
                                 <h2 className="text-[11px] font-black text-white/40 uppercase tracking-widest ml-1">Activity Level</h2>
-                                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                <div className="grid grid-cols-2 gap-3">
                                     {activityLevels.map((level) => (
                                         <button
                                             key={level.id}
                                             type="button"
                                             onClick={() => setActivityLevel(level.id as ActivityLevel)}
-                                            className={`flex flex-col items-center gap-1 rounded-2xl border p-4 transition-all min-h-[90px] justify-center ${activityLevel === level.id
+                                            className={`flex items-center gap-3 rounded-2xl border px-4 py-5 transition-all w-full text-left ${activityLevel === level.id
                                                 ? 'border-primary bg-primary/10'
-                                                : 'border-[#2d2d2d] bg-black/40 hover:border-[#444]'
+                                                : 'border-white/5 bg-[#1A1A1A]/40 hover:border-white/10'
                                                 }`}
                                         >
-                                            <span className="text-xl">{level.icon}</span>
-                                            <span className={`text-[11px] font-black uppercase ${activityLevel === level.id ? 'text-primary' : 'text-white'}`}>
-                                                {level.label}
-                                            </span>
-                                            <span className="text-[10px] font-medium text-white/20 text-center leading-tight">
-                                                {level.desc}
-                                            </span>
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-2xl shrink-0">
+                                                {level.icon}
+                                            </div>
+                                            <div className="flex flex-col min-w-0">
+                                                <span className={`text-[14px] font-black ${activityLevel === level.id ? 'text-white' : 'text-white'}`}>
+                                                    {level.label}
+                                                </span>
+                                                <span className="text-[10px] font-medium text-white/30 truncate">
+                                                    {level.desc}
+                                                </span>
+                                            </div>
                                         </button>
                                     ))}
                                 </div>
@@ -148,24 +147,32 @@ export default function Preferences() {
 
                             {/* Workout Days */}
                             <div className="space-y-4">
-                                <div className="flex justify-between items-end">
-                                    <h2 className="text-[11px] font-black text-white/40 uppercase tracking-widest ml-1">Workout days per week</h2>
-                                    <span className="text-[11px] font-black text-primary uppercase">{workoutDays} days</span>
+                                <div className="space-y-1">
+                                    <h2 className="text-[14px] font-black text-white tracking-tight ml-1">Workout days per week</h2>
+                                    <p className="text-[12px] font-bold text-primary ml-1 tracking-tight">
+                                        {workoutDays} days - {workoutDays <= 2 ? 'Minimal & consistent' : workoutDays <= 4 ? 'Balanced & sustainable' : 'Elite & intensive'}
+                                    </p>
                                 </div>
-                                <div className="space-y-2">
-                                    <input
-                                        type="range"
-                                        min="1"
-                                        max="7"
-                                        value={workoutDays}
-                                        onChange={(e) => setWorkoutDays(Number(e.target.value))}
-                                        className="w-full accent-primary bg-white/5 h-1.5 rounded-full appearance-none cursor-pointer"
-                                    />
-                                    <div className="flex justify-between text-[10px] font-black text-white/20 uppercase tracking-widest px-1">
+                                <div className="space-y-4">
+                                    <div className="relative flex items-center h-6">
+                                        <div className="absolute w-full h-1.5 bg-white/10 rounded-full" />
+                                        <div
+                                            className="absolute h-1.5 bg-[#0095FF] rounded-full transition-all duration-300"
+                                            style={{ width: `${((workoutDays - 1) / 6) * 100}%` }}
+                                        />
+                                        <input
+                                            type="range"
+                                            min="1"
+                                            max="7"
+                                            value={workoutDays}
+                                            onChange={(e) => setWorkoutDays(Number(e.target.value))}
+                                            className="absolute w-full appearance-none bg-transparent cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-lg [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:shadow-lg"
+                                        />
+                                    </div>
+                                    <div className="flex justify-between text-[11px] font-bold text-white/30 tracking-tight px-1">
                                         <span>1 Day</span>
                                         <span>7 Day</span>
                                     </div>
-                                    <p className="text-[11px] font-medium text-white/40 text-center italic">Balanced & sustainable</p>
                                 </div>
                             </div>
 
@@ -178,7 +185,7 @@ export default function Preferences() {
                                         value={dietary}
                                         onChange={(e) => setDietary(e.target.value)}
                                         placeholder="Eg., Vegetarian, no dairy"
-                                        className="w-full bg-black/40 border border-[#2d2d2d] rounded-2xl p-5 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all font-medium"
+                                        className="w-full bg-[#1A1A1A]/60 backdrop-blur-md border border-white/5 rounded-2xl p-5 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-primary/30 focus:ring-1 focus:ring-primary/30 transition-all font-medium"
                                     />
                                 </div>
                                 <div className="flex flex-wrap gap-2">

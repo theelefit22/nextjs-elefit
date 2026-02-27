@@ -9,7 +9,7 @@ export interface MealItem {
     macro: string;
 }
 
-export type WeeklyMeals = Record<string, Record<string, MealItem[]>>;
+export type WeeklyMeals = Record<string, MealItem[]>[];
 
 export interface WorkoutPlan {
     name: string;
@@ -18,20 +18,18 @@ export interface WorkoutPlan {
     isRestDay: boolean;
 }
 
-export type WeeklyWorkouts = Record<string, WorkoutPlan>;
-
-const DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+export type WeeklyWorkouts = WorkoutPlan[];
 
 export function parseMealPlan(text: string): WeeklyMeals {
-    const meals: WeeklyMeals = {};
-    const days = text.split(/Day\s*\d+:/i).filter(d => d.trim());
+    const weeklyMeals: WeeklyMeals = [];
+    // Split by Day X markers, keeping the marker in the segment
+    const daySegments = text.split(/(?=Day\s*\d+[:\s\u2013\u2014-])/i).filter(d => d.trim());
 
-    days.forEach((dayText, index) => {
+    daySegments.forEach((dayText, index) => {
         if (index >= 7) return;
-        const dayName = DAYS[index];
-        meals[dayName] = {};
+        const dayMeals: Record<string, MealItem[]> = {};
 
-        const mealSections = dayText.split(/- (Breakfast|Lunch|Snack|Dinner|Snacks)\s*\((\d+)[^)]*\)\s*:/i);
+        const mealSections = dayText.split(/\- (Breakfast|Lunch|Snack|Dinner|Snacks)\s*\((\d+)[^)]*\)\s*:/i);
 
         for (let i = 1; i < mealSections.length; i += 3) {
             let mealType = mealSections[i].trim();
@@ -39,8 +37,6 @@ export function parseMealPlan(text: string): WeeklyMeals {
             const itemsText = mealSections[i + 2] || '';
             const items: MealItem[] = [];
 
-            // Match "1. Food Name - Quantity - Calories kcal - Macros"
-            // Example: "1. Oatmeal - 245 g - 955 kcal - 22g Prot • 8g fat • 48g carbs"
             const itemLines = itemsText.split('\n');
             itemLines.forEach(line => {
                 const match = line.match(/^\s*\d+\.\s*(.*?)\s*[—\-–]+\s*(.*?)\s*[—\-–]+\s*(\d+(?:\.\d+)?)\s*kcal\s*[—\-–]+\s*(.*)$/i);
@@ -52,7 +48,6 @@ export function parseMealPlan(text: string): WeeklyMeals {
                         macro: match[4].trim().replace(/\//g, ' • ')
                     });
                 } else {
-                    // Fallback for simpler format
                     const simpleMatch = line.match(/^\s*\d+\.\s*(.*?)\s*[—\-–]+\s*(.*?)\s*[—\-–]+\s*(\d+(?:\.\d+)?)\s*kcal/i);
                     if (simpleMatch) {
                         items.push({
@@ -66,45 +61,72 @@ export function parseMealPlan(text: string): WeeklyMeals {
             });
 
             if (items.length > 0) {
-                meals[dayName][mealType] = items;
+                dayMeals[mealType] = items;
             }
         }
+        weeklyMeals.push(dayMeals);
     });
 
-    return meals;
+    // Ensure we have 7 days
+    while (weeklyMeals.length < 7) weeklyMeals.push({});
+    return weeklyMeals;
 }
 
 export function parseWorkoutPlan(text: string): WeeklyWorkouts {
-    const workouts: WeeklyWorkouts = {};
-    const days = text.split(/Day\s*\d+:/i).filter(d => d.trim());
+    const weeklyWorkouts: WeeklyWorkouts = [];
+    // Split by Day X markers, keeping the marker in the segment
+    const daySegments = text.split(/(?=Day\s*\d+[:\s\u2013\u2014-])/i).filter(d => d.trim());
 
-    days.forEach((dayText, index) => {
+    daySegments.forEach((dayText, index) => {
         if (index >= 7) return;
-        const dayName = DAYS[index];
 
-        // Match "Workout: Name (Duration)"
-        const nameMatch = dayText.match(/Workout:\s*(.*?)\s*(?:\((.*?)\))?\n/i);
-        const name = nameMatch ? nameMatch[1].trim() : 'Rest Day';
-        const duration = nameMatch && nameMatch[2] ? nameMatch[2].trim() : '0 mins';
+        // Backend format: "Day 1 – [Muscle Focus or Rest Day]:"
+        // Regex to extract focus after the dash/marker
+        const headerMatch = dayText.match(/Day\s*\d+.*?[—\-–\u2013\u2014]\s*(.*?):/i);
+        let name = headerMatch ? headerMatch[1].trim() : '';
+
+        // Fallback for "Workout: Name (Duration)"
+        if (!name || name.toLowerCase().includes('day')) {
+            const workoutMatch = dayText.match(/Workout:\s*(.*?)\s*(?:\((.*?)\))?\n/i);
+            if (workoutMatch) {
+                name = workoutMatch[1].trim();
+            }
+        }
+
+        if (!name) name = 'Rest Day';
+
+        const durationMatch = dayText.match(/\((.*?mins?)\)/i);
+        const duration = durationMatch ? durationMatch[1].trim() : '0 mins';
 
         const exercises: string[] = [];
-        const exerciseLines = dayText.split('\n');
-        exerciseLines.forEach(line => {
-            const match = line.match(/^\s*\d+\.\s*(.*?)(?:\s*[—\-–]\s*.*)?$/);
-            if (match && !line.toLowerCase().includes('workout:')) {
-                exercises.push(match[1].trim());
+        const lines = dayText.split('\n');
+        lines.forEach(line => {
+            // Match numbered items but ignore header/summary lines
+            const exMatch = line.match(/^\s*\d+\.\s*(.*?)(?:\s*[—\-–\u2013\u2014]\s*.*)?$/);
+            if (exMatch && !line.toLowerCase().includes('day') && !line.toLowerCase().includes('workout:')) {
+                exercises.push(exMatch[1].trim());
             }
         });
 
         const isRestDay = name.toLowerCase().includes('rest') || exercises.length === 0;
 
-        workouts[dayName] = {
-            name,
-            duration,
+        weeklyWorkouts.push({
+            name: isRestDay ? 'Rest Day' : name,
+            duration: isRestDay ? '0 mins' : duration,
             exercises,
             isRestDay
-        };
+        });
     });
 
-    return workouts;
+    // Ensure we have 7 days
+    while (weeklyWorkouts.length < 7) {
+        weeklyWorkouts.push({
+            name: 'Rest Day',
+            duration: '0 mins',
+            exercises: [],
+            isRestDay: true
+        });
+    }
+
+    return weeklyWorkouts;
 }

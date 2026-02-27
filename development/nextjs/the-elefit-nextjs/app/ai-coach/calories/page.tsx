@@ -51,7 +51,7 @@ export default function Calories() {
 
                 console.log("Fetching targets with data:", data);
 
-                const response = await fetch('http://localhost:8000/user', {
+                const response = await fetch('https://backend-aicoach.onrender.com/user', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -117,7 +117,7 @@ export default function Calories() {
             updateData({ mealPlan: null, workoutPlan: null });
 
             // 1. Generate Meal Plan
-            const mealResponse = await fetch('http://localhost:8000/mealplan', {
+            const mealResponse = await fetch('https://backend-aicoach.onrender.com/mealplan', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -146,7 +146,7 @@ export default function Calories() {
             }
 
             // 2. Generate Workout Plan
-            const workoutResponse = await fetch('http://localhost:8000/workoutplan', {
+            const workoutResponse = await fetch('https://backend-aicoach.onrender.com/workoutplan', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -208,7 +208,7 @@ export default function Calories() {
             {/* Desktop Center / Mobile Drawer Container */}
             <div className="relative z-10 flex flex-1 items-end md:items-center justify-center">
                 {/* Content Card / Drawer */}
-                <div className={`w-full md:max-w-md bg-[#111] rounded-t-[40px] md:rounded-[40px] border-t md:border border-white/10 px-6 pt-2 pb-12 md:pb-20 h-auto overflow-y-auto custom-scrollbar transition-transform duration-500 ease-out ${mounted ? 'translate-y-0' : 'translate-y-full md:translate-y-4'}`}>
+                <div className={`w-full md:max-w-md bg-[#0D0D0D]/80 backdrop-blur-xl rounded-t-[40px] md:rounded-[40px] border-t md:border border-white/5 px-6 pt-2 pb-12 md:pb-20 h-auto overflow-y-auto custom-scrollbar transition-transform duration-500 ease-out ${mounted ? 'translate-y-0' : 'translate-y-full md:translate-y-4'}`}>
                     {/* Drag Handle (Mobile) */}
                     <div className="flex justify-center mb-6 md:hidden sticky top-0 bg-[#111] py-2 z-20">
                         <div className="w-12 h-1 bg-white/20 rounded-full" />
@@ -219,9 +219,9 @@ export default function Calories() {
                         <div className="flex items-center justify-between">
                             <button
                                 onClick={() => router.back()}
-                                className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/20 text-primary hover:bg-primary/30 transition-colors"
+                                className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-black hover:bg-primary/90 transition-all active:scale-95 shadow-[0_0_15px_rgba(204,216,83,0.3)]"
                             >
-                                <ArrowLeft className="h-5 w-5" />
+                                <ArrowLeft className="h-5 w-5 stroke-[3]" />
                             </button>
                             <span className="text-[11px] font-black text-white/40 uppercase tracking-widest">Step 4 of 4</span>
                         </div>
@@ -277,7 +277,7 @@ export default function Calories() {
                                 {/* Large Calorie Display */}
                                 <div className="relative group">
                                     <div className="absolute inset-0 bg-primary/5 rounded-[32px] blur-2xl group-hover:bg-primary/10 transition-all" />
-                                    <div className="relative bg-black/40 border border-[#2d2d2d] rounded-[32px] p-8 flex flex-col items-center justify-center text-center">
+                                    <div className="relative bg-[#1A1A1A]/60 backdrop-blur-md border border-white/5 rounded-[32px] p-8 flex flex-col items-center justify-center text-center">
                                         <span className="text-[56px] font-black text-primary tracking-tighter leading-none">
                                             {calorieData.dailyCalories}
                                         </span>
@@ -290,12 +290,12 @@ export default function Calories() {
                                 {/* Macros Grid */}
                                 <div className="grid grid-cols-3 gap-3">
                                     {/* Protein */}
-                                    <div className="bg-black/40 border border-[#2d2d2d] rounded-2xl p-4 flex flex-col items-center gap-1">
+                                    <div className="bg-[#1A1A1A]/60 backdrop-blur-md border border-white/5 rounded-2xl p-4 flex flex-col items-center gap-1">
                                         <span className="text-[18px] font-black text-white">{calorieData.proteinGrams}g</span>
                                         <span className="text-[10px] font-black text-[#FF6B6B] uppercase tracking-wider">Protein</span>
                                     </div>
                                     {/* Carbs */}
-                                    <div className="bg-black/40 border border-[#2d2d2d] rounded-2xl p-4 flex flex-col items-center gap-1">
+                                    <div className="bg-[#1A1A1A]/60 backdrop-blur-md border border-white/5 rounded-2xl p-4 flex flex-col items-center gap-1">
                                         <span className="text-[18px] font-black text-white">{calorieData.carbsGrams}g</span>
                                         <span className="text-[10px] font-black text-[#4ECDC4] uppercase tracking-wider">Carbs</span>
                                     </div>
