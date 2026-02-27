@@ -1,0 +1,168 @@
+2026-02-22 03:12:42 [WORKOUTPLAN] INFO: === /workoutplan endpoint called ===
+2026-02-22 03:12:42 [WORKOUTPLAN] INFO: Received data: {
+  "goal": "get fit with indain food",
+  "workoutFocus": "Mixed Cardio and Strength",
+  "days": 5,
+  "targetWeight": "55",
+  "timelineWeeks": 20,
+  "prompt": "get fit with indain food"
+}
+2026-02-22 03:12:42 [WORKOUTPLAN] INFO: === PARSED INPUTS ===
+2026-02-22 03:12:42 [WORKOUTPLAN] INFO: Goal: get fit with indain food
+2026-02-22 03:12:42 [WORKOUTPLAN] INFO: Workout Focus: Mixed Cardio and Strength
+2026-02-22 03:12:42 [WORKOUTPLAN] INFO: Workout Days: 5
+2026-02-22 03:12:42 [WORKOUTPLAN] INFO: Target Weight: 55 kg
+2026-02-22 03:12:42 [WORKOUTPLAN] INFO: Timeline: 20 weeks
+2026-02-22 03:12:42 [WORKOUTPLAN] INFO: User Prompt: get fit with indain food
+2026-02-22 03:12:42 [WORKOUTPLAN] INFO: ===================
+
+2026-02-22 03:12:42 [WORKOUTPLAN] INFO: === GROQ WORKOUT OUTPUT START ===
+2026-02-22 03:12:43 [WORKOUTPLAN] INFO: === GROQ WORKOUT OUTPUT END ===
+2026-02-22 03:12:43 [WORKOUTPLAN] INFO: Total characters streamed: 1598
+2026-02-22 03:13:33 [WORKOUTPLAN] INFO: === /workoutplan endpoint called ===
+2026-02-22 03:13:33 [WORKOUTPLAN] INFO: Received data: {
+  "goal": "get fit with indain food",
+  "workoutFocus": "Mixed Cardio and Strength",
+  "days": 5,
+  "targetWeight": "55",
+  "timelineWeeks": 20,
+  "prompt": "get fit with indain food"
+}
+2026-02-22 03:13:33 [WORKOUTPLAN] INFO: === PARSED INPUTS ===
+2026-02-22 03:13:33 [WORKOUTPLAN] INFO: Goal: get fit with indain food
+2026-02-22 03:13:33 [WORKOUTPLAN] INFO: Workout Focus: Mixed Cardio and Strength
+2026-02-22 03:13:33 [WORKOUTPLAN] INFO: Workout Days: 5
+2026-02-22 03:13:33 [WORKOUTPLAN] INFO: Target Weight: 55 kg
+2026-02-22 03:13:33 [WORKOUTPLAN] INFO: Timeline: 20 weeks
+2026-02-22 03:13:33 [WORKOUTPLAN] INFO: User Prompt: get fit with indain food
+2026-02-22 03:13:33 [WORKOUTPLAN] INFO: ===================
+
+2026-02-22 03:13:33 [WORKOUTPLAN] INFO: === GROQ WORKOUT OUTPUT START ===
+2026-02-22 03:13:35 [WORKOUTPLAN] INFO: === GROQ WORKOUT OUTPUT END ===
+2026-02-22 03:13:35 [WORKOUTPLAN] INFO: Total characters streamed: 1557
+2026-02-22 03:25:44 [WORKOUTPLAN] INFO: === /workoutplan endpoint called ===
+2026-02-22 03:25:44 [WORKOUTPLAN] INFO: Received data: {
+  "goal": "get fit with indain food",
+  "workoutFocus": "Mixed Cardio and Strength",
+  "days": 5,
+  "targetWeight": "55",
+  "timelineWeeks": 20,
+  "prompt": "get fit with indain food"
+}
+2026-02-22 03:25:44 [WORKOUTPLAN] INFO: === PARSED INPUTS ===
+2026-02-22 03:25:44 [WORKOUTPLAN] INFO: Goal: get fit with indain food
+2026-02-22 03:25:44 [WORKOUTPLAN] INFO: Workout Focus: Mixed Cardio and Strength
+2026-02-22 03:25:44 [WORKOUTPLAN] INFO: Workout Days: 5
+2026-02-22 03:25:44 [WORKOUTPLAN] INFO: Target Weight: 55 kg
+2026-02-22 03:25:44 [WORKOUTPLAN] INFO: Timeline: 20 weeks
+2026-02-22 03:25:44 [WORKOUTPLAN] INFO: User Prompt: get fit with indain food
+2026-02-22 03:25:44 [WORKOUTPLAN] INFO: ===================
+
+2026-02-22 03:25:44 [WORKOUTPLAN] INFO: === GROQ WORKOUT OUTPUT START ===
+2026-02-22 03:25:45 [WORKOUTPLAN] INFO: === GROQ WORKOUT OUTPUT END ===
+2026-02-22 03:25:45 [WORKOUTPLAN] INFO: Total characters streamed: 1323
+2026-02-22 03:27:14 [WORKOUTPLAN] INFO: === /workoutplan endpoint called ===
+2026-02-22 03:27:14 [WORKOUTPLAN] INFO: Received data: {
+  "goal": "get fit with indain food",
+  "workoutFocus": "Mixed Cardio and Strength",
+  "days": 3,
+  "targetWeight": "55",
+  "timelineWeeks": 20,
+  "prompt": "get fit with indain food"
+}
+2026-02-22 03:27:14 [WORKOUTPLAN] INFO: === PARSED INPUTS ===
+2026-02-22 03:27:14 [WORKOUTPLAN] INFO: Goal: get fit with indain food
+2026-02-22 03:27:14 [WORKOUTPLAN] INFO: Workout Focus: Mixed Cardio and Strength
+2026-02-22 03:27:14 [WORKOUTPLAN] INFO: Workout Days: 3
+2026-02-22 03:27:14 [WORKOUTPLAN] INFO: Target Weight: 55 kg
+2026-02-22 03:27:14 [WORKOUTPLAN] INFO: Timeline: 20 weeks
+2026-02-22 03:27:14 [WORKOUTPLAN] INFO: User Prompt: get fit with indain food
+2026-02-22 03:27:14 [WORKOUTPLAN] INFO: ===================
+
+2026-02-22 03:27:14 [WORKOUTPLAN] INFO: === GROQ WORKOUT OUTPUT START ===
+2026-02-22 03:27:15 [WORKOUTPLAN] INFO: === GROQ WORKOUT OUTPUT END ===
+2026-02-22 03:27:15 [WORKOUTPLAN] INFO: Total characters streamed: 1046
+2026-02-22 03:28:39 [WORKOUTPLAN] INFO: === /workoutplan endpoint called ===
+2026-02-22 03:28:39 [WORKOUTPLAN] INFO: Received data: {
+  "goal": "get fit with spanish food",
+  "workoutFocus": "Mixed Cardio and Strength",
+  "days": 3,
+  "targetWeight": "55",
+  "timelineWeeks": 40,
+  "prompt": "get fit with spanish food"
+}
+2026-02-22 03:28:39 [WORKOUTPLAN] INFO: === PARSED INPUTS ===
+2026-02-22 03:28:39 [WORKOUTPLAN] INFO: Goal: get fit with spanish food
+2026-02-22 03:28:39 [WORKOUTPLAN] INFO: Workout Focus: Mixed Cardio and Strength
+2026-02-22 03:28:39 [WORKOUTPLAN] INFO: Workout Days: 3
+2026-02-22 03:28:39 [WORKOUTPLAN] INFO: Target Weight: 55 kg
+2026-02-22 03:28:39 [WORKOUTPLAN] INFO: Timeline: 40 weeks
+2026-02-22 03:28:39 [WORKOUTPLAN] INFO: User Prompt: get fit with spanish food
+2026-02-22 03:28:39 [WORKOUTPLAN] INFO: ===================
+
+2026-02-22 03:28:39 [WORKOUTPLAN] INFO: === GROQ WORKOUT OUTPUT START ===
+2026-02-22 03:28:40 [WORKOUTPLAN] INFO: === GROQ WORKOUT OUTPUT END ===
+2026-02-22 03:28:40 [WORKOUTPLAN] INFO: Total characters streamed: 984
+2026-02-22 04:49:03 [WORKOUTPLAN] INFO: === /workoutplan endpoint called ===
+2026-02-22 04:49:03 [WORKOUTPLAN] INFO: Received data: {
+  "goal": "get fit with spanish food",
+  "workoutFocus": "Mixed Cardio and Strength",
+  "days": 3,
+  "targetWeight": "55",
+  "timelineWeeks": 40,
+  "prompt": "get fit with spanish food"
+}
+2026-02-22 04:49:03 [WORKOUTPLAN] INFO: === PARSED INPUTS ===
+2026-02-22 04:49:03 [WORKOUTPLAN] INFO: Goal: get fit with spanish food
+2026-02-22 04:49:03 [WORKOUTPLAN] INFO: Workout Focus: Mixed Cardio and Strength
+2026-02-22 04:49:03 [WORKOUTPLAN] INFO: Workout Days: 3
+2026-02-22 04:49:03 [WORKOUTPLAN] INFO: Target Weight: 55 kg
+2026-02-22 04:49:03 [WORKOUTPLAN] INFO: Timeline: 40 weeks
+2026-02-22 04:49:03 [WORKOUTPLAN] INFO: User Prompt: get fit with spanish food
+2026-02-22 04:49:03 [WORKOUTPLAN] INFO: ===================
+
+2026-02-22 04:49:03 [WORKOUTPLAN] INFO: === GROQ WORKOUT OUTPUT START ===
+2026-02-22 04:49:04 [WORKOUTPLAN] INFO: === GROQ WORKOUT OUTPUT END ===
+2026-02-22 04:49:04 [WORKOUTPLAN] INFO: Total characters streamed: 941
+2026-02-22 04:49:29 [WORKOUTPLAN] INFO: === /workoutplan endpoint called ===
+2026-02-22 04:49:29 [WORKOUTPLAN] INFO: Received data: {
+  "goal": "get fit with spanish food",
+  "workoutFocus": "Mixed Cardio and Strength",
+  "days": 3,
+  "targetWeight": "55",
+  "timelineWeeks": 40,
+  "prompt": "get fit with spanish food"
+}
+2026-02-22 04:49:29 [WORKOUTPLAN] INFO: === PARSED INPUTS ===
+2026-02-22 04:49:29 [WORKOUTPLAN] INFO: Goal: get fit with spanish food
+2026-02-22 04:49:29 [WORKOUTPLAN] INFO: Workout Focus: Mixed Cardio and Strength
+2026-02-22 04:49:29 [WORKOUTPLAN] INFO: Workout Days: 3
+2026-02-22 04:49:29 [WORKOUTPLAN] INFO: Target Weight: 55 kg
+2026-02-22 04:49:29 [WORKOUTPLAN] INFO: Timeline: 40 weeks
+2026-02-22 04:49:29 [WORKOUTPLAN] INFO: User Prompt: get fit with spanish food
+2026-02-22 04:49:29 [WORKOUTPLAN] INFO: ===================
+
+2026-02-22 04:49:29 [WORKOUTPLAN] INFO: === GROQ WORKOUT OUTPUT START ===
+2026-02-22 04:49:29 [WORKOUTPLAN] INFO: === GROQ WORKOUT OUTPUT END ===
+2026-02-22 04:49:29 [WORKOUTPLAN] INFO: Total characters streamed: 979
+2026-02-22 04:51:22 [WORKOUTPLAN] INFO: === /workoutplan endpoint called ===
+2026-02-22 04:51:22 [WORKOUTPLAN] INFO: Received data: {
+  "goal": "get fit with south indian food",
+  "workoutFocus": "Mixed Cardio and Strength",
+  "days": 7,
+  "targetWeight": "55",
+  "timelineWeeks": 40,
+  "prompt": "get fit with south indian food"
+}
+2026-02-22 04:51:22 [WORKOUTPLAN] INFO: === PARSED INPUTS ===
+2026-02-22 04:51:22 [WORKOUTPLAN] INFO: Goal: get fit with south indian food
+2026-02-22 04:51:22 [WORKOUTPLAN] INFO: Workout Focus: Mixed Cardio and Strength
+2026-02-22 04:51:22 [WORKOUTPLAN] INFO: Workout Days: 7
+2026-02-22 04:51:22 [WORKOUTPLAN] INFO: Target Weight: 55 kg
+2026-02-22 04:51:22 [WORKOUTPLAN] INFO: Timeline: 40 weeks
+2026-02-22 04:51:22 [WORKOUTPLAN] INFO: User Prompt: get fit with south indian food
+2026-02-22 04:51:22 [WORKOUTPLAN] INFO: ===================
+
+2026-02-22 04:51:22 [WORKOUTPLAN] INFO: === GROQ WORKOUT OUTPUT START ===
+2026-02-22 04:51:23 [WORKOUTPLAN] INFO: === GROQ WORKOUT OUTPUT END ===
+2026-02-22 04:51:23 [WORKOUTPLAN] INFO: Total characters streamed: 2050

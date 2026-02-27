@@ -1,0 +1,435 @@
+2026-02-22 03:12:33 [USER] INFO: === /user endpoint called ===
+2026-02-22 03:12:33 [USER] INFO: Received data: {
+  "userDetails": {
+    "age": "22",
+    "weight": "52",
+    "height": "175",
+    "gender": "male",
+    "activityLevel": "moderate",
+    "healthGoals": "get fit with indain food",
+    "targetWeight": "55",
+    "timelineWeeks": 20
+  },
+  "prompt": "get fit with indain food"
+}
+2026-02-22 03:12:33 [USER] INFO: Goal classification for 'get fit with indain food': get_fit
+2026-02-22 03:12:33 [USER] INFO: === CALCULATION RESULTS ===
+2026-02-22 03:12:33 [USER] INFO: Current weight: 52 kg
+2026-02-22 03:12:33 [USER] INFO: Target weight: 55 kg
+2026-02-22 03:12:33 [USER] INFO: TDEE: 2338
+2026-02-22 03:12:33 [USER] INFO: Weight change: 3 kg
+2026-02-22 03:12:33 [USER] INFO: Daily offset: 165
+2026-02-22 03:12:33 [USER] INFO: Target calories: 2503
+2026-02-22 03:12:33 [USER] INFO: Goal category: get_fit
+2026-02-22 03:12:33 [USER] INFO: Workout focus: Mixed Cardio and Strength
+2026-02-22 03:12:33 [USER] INFO: Macros: {"protein_g": 219, "fat_g": 97, "carbs_g": 188, "fiber_g": 35}
+2026-02-22 03:12:33 [USER] INFO: Capped: False
+2026-02-22 03:12:33 [USER] INFO: [PREGEN] Scheduled background generation for session 72ddc33dd9f2-1771710153
+2026-02-22 03:12:33 [USER] INFO: [PREGEN] Starting pre-generation for session 72ddc33dd9f2-1771710153
+2026-02-22 03:12:38 [USER] INFO: [PREGEN] Completed for session 72ddc33dd9f2-1771710153, 7 chunks
+2026-02-22 03:13:25 [USER] INFO: === /user endpoint called ===
+2026-02-22 03:13:25 [USER] INFO: Received data: {
+  "userDetails": {
+    "age": "22",
+    "weight": "52",
+    "height": "175",
+    "gender": "male",
+    "activityLevel": "moderate",
+    "healthGoals": "get fit with indain food",
+    "targetWeight": "55",
+    "timelineWeeks": 20
+  },
+  "prompt": "get fit with indain food"
+}
+2026-02-22 03:13:25 [USER] INFO: Goal classification for 'get fit with indain food': get_fit
+2026-02-22 03:13:25 [USER] INFO: === CALCULATION RESULTS ===
+2026-02-22 03:13:25 [USER] INFO: Current weight: 52 kg
+2026-02-22 03:13:25 [USER] INFO: Target weight: 55 kg
+2026-02-22 03:13:25 [USER] INFO: TDEE: 2338
+2026-02-22 03:13:25 [USER] INFO: Weight change: 3 kg
+2026-02-22 03:13:25 [USER] INFO: Daily offset: 165
+2026-02-22 03:13:25 [USER] INFO: Target calories: 2503
+2026-02-22 03:13:25 [USER] INFO: Goal category: get_fit
+2026-02-22 03:13:25 [USER] INFO: Workout focus: Mixed Cardio and Strength
+2026-02-22 03:13:25 [USER] INFO: Macros: {"protein_g": 219, "fat_g": 97, "carbs_g": 188, "fiber_g": 35}
+2026-02-22 03:13:25 [USER] INFO: Capped: False
+2026-02-22 03:13:25 [USER] INFO: [PREGEN] Scheduled background generation for session 7c2bcf99aad8-1771710205
+2026-02-22 03:13:25 [USER] INFO: === /user endpoint called ===
+2026-02-22 03:13:25 [USER] INFO: Received data: {
+  "userDetails": {
+    "age": "22",
+    "weight": "52",
+    "height": "175",
+    "gender": "male",
+    "activityLevel": "moderate",
+    "healthGoals": "get fit with indain food",
+    "targetWeight": "55",
+    "timelineWeeks": 20
+  },
+  "prompt": "get fit with indain food"
+}
+2026-02-22 03:13:25 [USER] INFO: Goal classification for 'get fit with indain food': get_fit
+2026-02-22 03:13:25 [USER] INFO: === CALCULATION RESULTS ===
+2026-02-22 03:13:25 [USER] INFO: Current weight: 52 kg
+2026-02-22 03:13:25 [USER] INFO: Target weight: 55 kg
+2026-02-22 03:13:25 [USER] INFO: TDEE: 2338
+2026-02-22 03:13:25 [USER] INFO: Weight change: 3 kg
+2026-02-22 03:13:25 [USER] INFO: Daily offset: 165
+2026-02-22 03:13:25 [USER] INFO: Target calories: 2503
+2026-02-22 03:13:25 [USER] INFO: Goal category: get_fit
+2026-02-22 03:13:25 [USER] INFO: Workout focus: Mixed Cardio and Strength
+2026-02-22 03:13:25 [USER] INFO: Macros: {"protein_g": 219, "fat_g": 97, "carbs_g": 188, "fiber_g": 35}
+2026-02-22 03:13:25 [USER] INFO: Capped: False
+2026-02-22 03:13:25 [USER] INFO: [PREGEN] Scheduled background generation for session 43a942cbffc7-1771710205
+2026-02-22 03:13:25 [USER] INFO: [PREGEN] Starting pre-generation for session 7c2bcf99aad8-1771710205
+2026-02-22 03:13:25 [USER] INFO: [PREGEN] Starting pre-generation for session 43a942cbffc7-1771710205
+2026-02-22 03:13:29 [USER] INFO: [PREGEN] Completed for session 7c2bcf99aad8-1771710205, 7 chunks
+2026-02-22 03:13:31 [USER] INFO: [PREGEN] Completed for session 43a942cbffc7-1771710205, 7 chunks
+2026-02-22 03:25:36 [USER] INFO: === /user endpoint called ===
+2026-02-22 03:25:36 [USER] INFO: Received data: {
+  "userDetails": {
+    "age": "22",
+    "weight": "52",
+    "height": "175",
+    "gender": "male",
+    "activityLevel": "moderate",
+    "healthGoals": "get fit with indain food",
+    "targetWeight": "55",
+    "timelineWeeks": 20
+  },
+  "prompt": "get fit with indain food"
+}
+2026-02-22 03:25:36 [USER] INFO: Goal classification for 'get fit with indain food': get_fit
+2026-02-22 03:25:36 [USER] INFO: === CALCULATION RESULTS ===
+2026-02-22 03:25:36 [USER] INFO: Current weight: 52 kg
+2026-02-22 03:25:36 [USER] INFO: Target weight: 55 kg
+2026-02-22 03:25:36 [USER] INFO: TDEE: 2338
+2026-02-22 03:25:36 [USER] INFO: Weight change: 3 kg
+2026-02-22 03:25:36 [USER] INFO: Daily offset: 165
+2026-02-22 03:25:36 [USER] INFO: Target calories: 2503
+2026-02-22 03:25:36 [USER] INFO: Goal category: get_fit
+2026-02-22 03:25:36 [USER] INFO: Workout focus: Mixed Cardio and Strength
+2026-02-22 03:25:36 [USER] INFO: Macros: {"protein_g": 219, "fat_g": 97, "carbs_g": 188, "fiber_g": 35}
+2026-02-22 03:25:36 [USER] INFO: Capped: False
+2026-02-22 03:25:36 [USER] INFO: [PREGEN] Scheduled background generation for session 7cd35574b4a1-1771710936
+2026-02-22 03:25:36 [USER] INFO: [PREGEN] Starting pre-generation for session 7cd35574b4a1-1771710936
+2026-02-22 03:25:36 [USER] INFO: === /user endpoint called ===
+2026-02-22 03:25:36 [USER] INFO: Received data: {
+  "userDetails": {
+    "age": "22",
+    "weight": "52",
+    "height": "175",
+    "gender": "male",
+    "activityLevel": "moderate",
+    "healthGoals": "get fit with indain food",
+    "targetWeight": "55",
+    "timelineWeeks": 20
+  },
+  "prompt": "get fit with indain food"
+}
+2026-02-22 03:25:36 [USER] INFO: Goal classification for 'get fit with indain food': get_fit
+2026-02-22 03:25:36 [USER] INFO: === CALCULATION RESULTS ===
+2026-02-22 03:25:36 [USER] INFO: Current weight: 52 kg
+2026-02-22 03:25:36 [USER] INFO: Target weight: 55 kg
+2026-02-22 03:25:36 [USER] INFO: TDEE: 2338
+2026-02-22 03:25:36 [USER] INFO: Weight change: 3 kg
+2026-02-22 03:25:36 [USER] INFO: Daily offset: 165
+2026-02-22 03:25:36 [USER] INFO: Target calories: 2503
+2026-02-22 03:25:36 [USER] INFO: Goal category: get_fit
+2026-02-22 03:25:36 [USER] INFO: Workout focus: Mixed Cardio and Strength
+2026-02-22 03:25:36 [USER] INFO: Macros: {"protein_g": 219, "fat_g": 97, "carbs_g": 188, "fiber_g": 35}
+2026-02-22 03:25:36 [USER] INFO: Capped: False
+2026-02-22 03:25:36 [USER] INFO: [PREGEN] Scheduled background generation for session 2e39366a5976-1771710936
+2026-02-22 03:25:36 [USER] INFO: [PREGEN] Starting pre-generation for session 2e39366a5976-1771710936
+2026-02-22 03:25:39 [USER] INFO: [PREGEN] Completed for session 2e39366a5976-1771710936, 7 chunks
+2026-02-22 03:25:41 [USER] INFO: [PREGEN] Completed for session 7cd35574b4a1-1771710936, 7 chunks
+2026-02-22 03:27:04 [USER] INFO: === /user endpoint called ===
+2026-02-22 03:27:04 [USER] INFO: Received data: {
+  "userDetails": {
+    "age": "22",
+    "weight": "52",
+    "height": "175",
+    "gender": "male",
+    "activityLevel": "moderate",
+    "healthGoals": "get fit with indain food",
+    "targetWeight": "55",
+    "timelineWeeks": 20
+  },
+  "prompt": "get fit with indain food"
+}
+2026-02-22 03:27:04 [USER] INFO: Goal classification for 'get fit with indain food': get_fit
+2026-02-22 03:27:04 [USER] INFO: === CALCULATION RESULTS ===
+2026-02-22 03:27:04 [USER] INFO: Current weight: 52 kg
+2026-02-22 03:27:04 [USER] INFO: Target weight: 55 kg
+2026-02-22 03:27:04 [USER] INFO: TDEE: 2338
+2026-02-22 03:27:04 [USER] INFO: Weight change: 3 kg
+2026-02-22 03:27:04 [USER] INFO: Daily offset: 165
+2026-02-22 03:27:04 [USER] INFO: Target calories: 2503
+2026-02-22 03:27:04 [USER] INFO: Goal category: get_fit
+2026-02-22 03:27:04 [USER] INFO: Workout focus: Mixed Cardio and Strength
+2026-02-22 03:27:04 [USER] INFO: Macros: {"protein_g": 219, "fat_g": 97, "carbs_g": 188, "fiber_g": 35}
+2026-02-22 03:27:04 [USER] INFO: Capped: False
+2026-02-22 03:27:04 [USER] INFO: [PREGEN] Scheduled background generation for session 3fc3b8b62867-1771711024
+2026-02-22 03:27:04 [USER] INFO: [PREGEN] Starting pre-generation for session 3fc3b8b62867-1771711024
+2026-02-22 03:27:04 [USER] INFO: === /user endpoint called ===
+2026-02-22 03:27:04 [USER] INFO: Received data: {
+  "userDetails": {
+    "age": "22",
+    "weight": "52",
+    "height": "175",
+    "gender": "male",
+    "activityLevel": "moderate",
+    "healthGoals": "get fit with indain food",
+    "targetWeight": "55",
+    "timelineWeeks": 20
+  },
+  "prompt": "get fit with indain food"
+}
+2026-02-22 03:27:04 [USER] INFO: Goal classification for 'get fit with indain food': get_fit
+2026-02-22 03:27:04 [USER] INFO: === CALCULATION RESULTS ===
+2026-02-22 03:27:04 [USER] INFO: Current weight: 52 kg
+2026-02-22 03:27:04 [USER] INFO: Target weight: 55 kg
+2026-02-22 03:27:04 [USER] INFO: TDEE: 2338
+2026-02-22 03:27:04 [USER] INFO: Weight change: 3 kg
+2026-02-22 03:27:04 [USER] INFO: Daily offset: 165
+2026-02-22 03:27:04 [USER] INFO: Target calories: 2503
+2026-02-22 03:27:04 [USER] INFO: Goal category: get_fit
+2026-02-22 03:27:04 [USER] INFO: Workout focus: Mixed Cardio and Strength
+2026-02-22 03:27:04 [USER] INFO: Macros: {"protein_g": 219, "fat_g": 97, "carbs_g": 188, "fiber_g": 35}
+2026-02-22 03:27:04 [USER] INFO: Capped: False
+2026-02-22 03:27:04 [USER] INFO: [PREGEN] Scheduled background generation for session fc184d50bd43-1771711024
+2026-02-22 03:27:04 [USER] INFO: [PREGEN] Starting pre-generation for session fc184d50bd43-1771711024
+2026-02-22 03:27:08 [USER] INFO: [PREGEN] Completed for session fc184d50bd43-1771711024, 7 chunks
+2026-02-22 03:27:09 [USER] INFO: [PREGEN] Completed for session 3fc3b8b62867-1771711024, 7 chunks
+2026-02-22 03:28:30 [USER] INFO: === /user endpoint called ===
+2026-02-22 03:28:30 [USER] INFO: Received data: {
+  "userDetails": {
+    "age": "30",
+    "weight": "52",
+    "height": "175",
+    "gender": "male",
+    "activityLevel": "active",
+    "healthGoals": "get fit with spanish food",
+    "targetWeight": "55",
+    "timelineWeeks": 40
+  },
+  "prompt": "get fit with spanish food"
+}
+2026-02-22 03:28:30 [USER] INFO: Goal classification for 'get fit with spanish food': get_fit
+2026-02-22 03:28:30 [USER] INFO: === CALCULATION RESULTS ===
+2026-02-22 03:28:30 [USER] INFO: Current weight: 52 kg
+2026-02-22 03:28:30 [USER] INFO: Target weight: 55 kg
+2026-02-22 03:28:30 [USER] INFO: TDEE: 2533
+2026-02-22 03:28:30 [USER] INFO: Weight change: 3 kg
+2026-02-22 03:28:30 [USER] INFO: Daily offset: 82
+2026-02-22 03:28:30 [USER] INFO: Target calories: 2616
+2026-02-22 03:28:30 [USER] INFO: Goal category: get_fit
+2026-02-22 03:28:30 [USER] INFO: Workout focus: Mixed Cardio and Strength
+2026-02-22 03:28:30 [USER] INFO: Macros: {"protein_g": 229, "fat_g": 102, "carbs_g": 196, "fiber_g": 37}
+2026-02-22 03:28:30 [USER] INFO: Capped: False
+2026-02-22 03:28:30 [USER] INFO: [PREGEN] Scheduled background generation for session 1714131a45e0-1771711110
+2026-02-22 03:28:30 [USER] INFO: [PREGEN] Starting pre-generation for session 1714131a45e0-1771711110
+2026-02-22 03:28:30 [USER] INFO: === /user endpoint called ===
+2026-02-22 03:28:30 [USER] INFO: Received data: {
+  "userDetails": {
+    "age": "30",
+    "weight": "52",
+    "height": "175",
+    "gender": "male",
+    "activityLevel": "active",
+    "healthGoals": "get fit with spanish food",
+    "targetWeight": "55",
+    "timelineWeeks": 40
+  },
+  "prompt": "get fit with spanish food"
+}
+2026-02-22 03:28:30 [USER] INFO: Goal classification for 'get fit with spanish food': get_fit
+2026-02-22 03:28:30 [USER] INFO: === CALCULATION RESULTS ===
+2026-02-22 03:28:30 [USER] INFO: Current weight: 52 kg
+2026-02-22 03:28:30 [USER] INFO: Target weight: 55 kg
+2026-02-22 03:28:30 [USER] INFO: TDEE: 2533
+2026-02-22 03:28:30 [USER] INFO: Weight change: 3 kg
+2026-02-22 03:28:30 [USER] INFO: Daily offset: 82
+2026-02-22 03:28:30 [USER] INFO: Target calories: 2616
+2026-02-22 03:28:30 [USER] INFO: Goal category: get_fit
+2026-02-22 03:28:30 [USER] INFO: Workout focus: Mixed Cardio and Strength
+2026-02-22 03:28:30 [USER] INFO: Macros: {"protein_g": 229, "fat_g": 102, "carbs_g": 196, "fiber_g": 37}
+2026-02-22 03:28:30 [USER] INFO: Capped: False
+2026-02-22 03:28:30 [USER] INFO: [PREGEN] Scheduled background generation for session 5462709c068b-1771711110
+2026-02-22 03:28:30 [USER] INFO: [PREGEN] Starting pre-generation for session 5462709c068b-1771711110
+2026-02-22 03:28:33 [USER] INFO: [PREGEN] Completed for session 1714131a45e0-1771711110, 7 chunks
+2026-02-22 03:28:34 [USER] INFO: [PREGEN] Completed for session 5462709c068b-1771711110, 7 chunks
+2026-02-22 04:48:56 [USER] INFO: === /user endpoint called ===
+2026-02-22 04:48:56 [USER] INFO: Received data: {
+  "userDetails": {
+    "age": "30",
+    "weight": "52",
+    "height": "175",
+    "gender": "male",
+    "activityLevel": "active",
+    "healthGoals": "get fit with spanish food",
+    "targetWeight": "55",
+    "timelineWeeks": 40
+  },
+  "prompt": "get fit with spanish food"
+}
+2026-02-22 04:48:56 [USER] INFO: Goal classification for 'get fit with spanish food': get_fit
+2026-02-22 04:48:56 [USER] INFO: === CALCULATION RESULTS ===
+2026-02-22 04:48:56 [USER] INFO: Current weight: 52 kg
+2026-02-22 04:48:56 [USER] INFO: Target weight: 55 kg
+2026-02-22 04:48:56 [USER] INFO: TDEE: 2533
+2026-02-22 04:48:56 [USER] INFO: Weight change: 3 kg
+2026-02-22 04:48:56 [USER] INFO: Daily offset: 82
+2026-02-22 04:48:56 [USER] INFO: Target calories: 2616
+2026-02-22 04:48:56 [USER] INFO: Goal category: get_fit
+2026-02-22 04:48:56 [USER] INFO: Workout focus: Mixed Cardio and Strength
+2026-02-22 04:48:56 [USER] INFO: Macros: {"protein_g": 229, "fat_g": 102, "carbs_g": 196, "fiber_g": 37}
+2026-02-22 04:48:56 [USER] INFO: Capped: False
+2026-02-22 04:48:56 [USER] INFO: [PREGEN] Scheduled background generation for session 5bcf6a7404dc-1771715936
+2026-02-22 04:48:56 [USER] INFO: === /user endpoint called ===
+2026-02-22 04:48:56 [USER] INFO: Received data: {
+  "userDetails": {
+    "age": "30",
+    "weight": "52",
+    "height": "175",
+    "gender": "male",
+    "activityLevel": "active",
+    "healthGoals": "get fit with spanish food",
+    "targetWeight": "55",
+    "timelineWeeks": 40
+  },
+  "prompt": "get fit with spanish food"
+}
+2026-02-22 04:48:56 [USER] INFO: Goal classification for 'get fit with spanish food': get_fit
+2026-02-22 04:48:56 [USER] INFO: === CALCULATION RESULTS ===
+2026-02-22 04:48:56 [USER] INFO: Current weight: 52 kg
+2026-02-22 04:48:56 [USER] INFO: Target weight: 55 kg
+2026-02-22 04:48:56 [USER] INFO: TDEE: 2533
+2026-02-22 04:48:56 [USER] INFO: Weight change: 3 kg
+2026-02-22 04:48:56 [USER] INFO: Daily offset: 82
+2026-02-22 04:48:56 [USER] INFO: Target calories: 2616
+2026-02-22 04:48:56 [USER] INFO: Goal category: get_fit
+2026-02-22 04:48:56 [USER] INFO: Workout focus: Mixed Cardio and Strength
+2026-02-22 04:48:56 [USER] INFO: Macros: {"protein_g": 229, "fat_g": 102, "carbs_g": 196, "fiber_g": 37}
+2026-02-22 04:48:56 [USER] INFO: Capped: False
+2026-02-22 04:48:56 [USER] INFO: [PREGEN] Scheduled background generation for session 854af6a6f08d-1771715936
+2026-02-22 04:48:56 [USER] INFO: [PREGEN] Starting pre-generation for session 5bcf6a7404dc-1771715936
+2026-02-22 04:48:56 [USER] INFO: [PREGEN] Starting pre-generation for session 854af6a6f08d-1771715936
+2026-02-22 04:49:01 [USER] INFO: [PREGEN] Completed for session 5bcf6a7404dc-1771715936, 7 chunks
+2026-02-22 04:49:01 [USER] INFO: [PREGEN] Completed for session 854af6a6f08d-1771715936, 7 chunks
+2026-02-22 04:49:22 [USER] INFO: === /user endpoint called ===
+2026-02-22 04:49:22 [USER] INFO: Received data: {
+  "userDetails": {
+    "age": "30",
+    "weight": "52",
+    "height": "175",
+    "gender": "male",
+    "activityLevel": "active",
+    "healthGoals": "get fit with spanish food",
+    "targetWeight": "55",
+    "timelineWeeks": 40
+  },
+  "prompt": "get fit with spanish food"
+}
+2026-02-22 04:49:22 [USER] INFO: Goal classification for 'get fit with spanish food': get_fit
+2026-02-22 04:49:22 [USER] INFO: === CALCULATION RESULTS ===
+2026-02-22 04:49:22 [USER] INFO: Current weight: 52 kg
+2026-02-22 04:49:22 [USER] INFO: Target weight: 55 kg
+2026-02-22 04:49:22 [USER] INFO: TDEE: 2533
+2026-02-22 04:49:22 [USER] INFO: Weight change: 3 kg
+2026-02-22 04:49:22 [USER] INFO: Daily offset: 82
+2026-02-22 04:49:22 [USER] INFO: Target calories: 2616
+2026-02-22 04:49:22 [USER] INFO: Goal category: get_fit
+2026-02-22 04:49:22 [USER] INFO: Workout focus: Mixed Cardio and Strength
+2026-02-22 04:49:22 [USER] INFO: Macros: {"protein_g": 229, "fat_g": 102, "carbs_g": 196, "fiber_g": 37}
+2026-02-22 04:49:22 [USER] INFO: Capped: False
+2026-02-22 04:49:22 [USER] INFO: [PREGEN] Scheduled background generation for session 4014e8dd10ee-1771715962
+2026-02-22 04:49:22 [USER] INFO: === /user endpoint called ===
+2026-02-22 04:49:22 [USER] INFO: Received data: {
+  "userDetails": {
+    "age": "30",
+    "weight": "52",
+    "height": "175",
+    "gender": "male",
+    "activityLevel": "active",
+    "healthGoals": "get fit with spanish food",
+    "targetWeight": "55",
+    "timelineWeeks": 40
+  },
+  "prompt": "get fit with spanish food"
+}
+2026-02-22 04:49:22 [USER] INFO: Goal classification for 'get fit with spanish food': get_fit
+2026-02-22 04:49:22 [USER] INFO: === CALCULATION RESULTS ===
+2026-02-22 04:49:22 [USER] INFO: Current weight: 52 kg
+2026-02-22 04:49:22 [USER] INFO: Target weight: 55 kg
+2026-02-22 04:49:22 [USER] INFO: TDEE: 2533
+2026-02-22 04:49:22 [USER] INFO: Weight change: 3 kg
+2026-02-22 04:49:22 [USER] INFO: Daily offset: 82
+2026-02-22 04:49:22 [USER] INFO: Target calories: 2616
+2026-02-22 04:49:22 [USER] INFO: Goal category: get_fit
+2026-02-22 04:49:22 [USER] INFO: Workout focus: Mixed Cardio and Strength
+2026-02-22 04:49:22 [USER] INFO: Macros: {"protein_g": 229, "fat_g": 102, "carbs_g": 196, "fiber_g": 37}
+2026-02-22 04:49:22 [USER] INFO: Capped: False
+2026-02-22 04:49:22 [USER] INFO: [PREGEN] Scheduled background generation for session 7d6811783622-1771715962
+2026-02-22 04:49:22 [USER] INFO: [PREGEN] Starting pre-generation for session 4014e8dd10ee-1771715962
+2026-02-22 04:49:22 [USER] INFO: [PREGEN] Starting pre-generation for session 7d6811783622-1771715962
+2026-02-22 04:49:25 [USER] INFO: [PREGEN] Completed for session 7d6811783622-1771715962, 7 chunks
+2026-02-22 04:49:25 [USER] INFO: [PREGEN] Completed for session 4014e8dd10ee-1771715962, 7 chunks
+2026-02-22 04:51:14 [USER] INFO: === /user endpoint called ===
+2026-02-22 04:51:14 [USER] INFO: Received data: {
+  "userDetails": {
+    "age": "30",
+    "weight": "52",
+    "height": "175",
+    "gender": "male",
+    "activityLevel": "active",
+    "healthGoals": "get fit with south indian food",
+    "targetWeight": "55",
+    "timelineWeeks": 40
+  },
+  "prompt": "get fit with south indian food"
+}
+2026-02-22 04:51:14 [USER] INFO: Goal classification for 'get fit with south indian food': get_fit
+2026-02-22 04:51:14 [USER] INFO: === CALCULATION RESULTS ===
+2026-02-22 04:51:14 [USER] INFO: Current weight: 52 kg
+2026-02-22 04:51:14 [USER] INFO: Target weight: 55 kg
+2026-02-22 04:51:14 [USER] INFO: TDEE: 2533
+2026-02-22 04:51:14 [USER] INFO: Weight change: 3 kg
+2026-02-22 04:51:14 [USER] INFO: Daily offset: 82
+2026-02-22 04:51:14 [USER] INFO: Target calories: 2616
+2026-02-22 04:51:14 [USER] INFO: Goal category: get_fit
+2026-02-22 04:51:14 [USER] INFO: Workout focus: Mixed Cardio and Strength
+2026-02-22 04:51:14 [USER] INFO: Macros: {"protein_g": 229, "fat_g": 102, "carbs_g": 196, "fiber_g": 37}
+2026-02-22 04:51:14 [USER] INFO: Capped: False
+2026-02-22 04:51:14 [USER] INFO: [PREGEN] Scheduled background generation for session 10c06adb77bd-1771716074
+2026-02-22 04:51:14 [USER] INFO: [PREGEN] Starting pre-generation for session 10c06adb77bd-1771716074
+2026-02-22 04:51:14 [USER] INFO: === /user endpoint called ===
+2026-02-22 04:51:14 [USER] INFO: Received data: {
+  "userDetails": {
+    "age": "30",
+    "weight": "52",
+    "height": "175",
+    "gender": "male",
+    "activityLevel": "active",
+    "healthGoals": "get fit with south indian food",
+    "targetWeight": "55",
+    "timelineWeeks": 40
+  },
+  "prompt": "get fit with south indian food"
+}
+2026-02-22 04:51:14 [USER] INFO: Goal classification for 'get fit with south indian food': get_fit
+2026-02-22 04:51:14 [USER] INFO: === CALCULATION RESULTS ===
+2026-02-22 04:51:14 [USER] INFO: Current weight: 52 kg
+2026-02-22 04:51:14 [USER] INFO: Target weight: 55 kg
+2026-02-22 04:51:14 [USER] INFO: TDEE: 2533
+2026-02-22 04:51:14 [USER] INFO: Weight change: 3 kg
+2026-02-22 04:51:14 [USER] INFO: Daily offset: 82
+2026-02-22 04:51:14 [USER] INFO: Target calories: 2616
+2026-02-22 04:51:14 [USER] INFO: Goal category: get_fit
+2026-02-22 04:51:14 [USER] INFO: Workout focus: Mixed Cardio and Strength
+2026-02-22 04:51:14 [USER] INFO: Macros: {"protein_g": 229, "fat_g": 102, "carbs_g": 196, "fiber_g": 37}
+2026-02-22 04:51:14 [USER] INFO: Capped: False
+2026-02-22 04:51:14 [USER] INFO: [PREGEN] Scheduled background generation for session 4f260aec480a-1771716074
+2026-02-22 04:51:14 [USER] INFO: [PREGEN] Starting pre-generation for session 4f260aec480a-1771716074
+2026-02-22 04:51:18 [USER] INFO: [PREGEN] Completed for session 4f260aec480a-1771716074, 7 chunks
+2026-02-22 04:51:18 [USER] INFO: [PREGEN] Completed for session 10c06adb77bd-1771716074, 7 chunks
