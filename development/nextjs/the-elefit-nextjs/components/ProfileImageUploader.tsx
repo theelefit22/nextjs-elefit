@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { getProfileImageURL } from '@/shared/storageService';
-import { uploadProfileImage } from '@/shared/firebase';
+import { getProfileImageURL, updateProfileImage } from '@/shared/storageService';
 import { useAuth } from '@/contexts/AuthContext';
 
 const DEFAULT_PROFILE_IMAGE =
@@ -11,6 +10,7 @@ interface ProfileImageUploaderProps {
   size?: 'small' | 'medium' | 'large';
   onImageUploaded?: (url: string) => void;
   className?: string;
+  isEditable?: boolean;
 }
 
 const ProfileImageUploader = ({
@@ -18,6 +18,7 @@ const ProfileImageUploader = ({
   size = 'medium',
   onImageUploaded,
   className = '',
+  isEditable = true,
 }: ProfileImageUploaderProps) => {
   const { user: currentUser } = useAuth();
   const [imageUrl, setImageUrl] = useState(currentImageUrl || DEFAULT_PROFILE_IMAGE);
@@ -95,7 +96,7 @@ const ProfileImageUploader = ({
   };
 
   const triggerFileUpload = () => {
-    if (isUploading || previewUrl) return;
+    if (!isEditable || isUploading || previewUrl) return;
     fileInputRef.current?.click();
   };
 
@@ -123,17 +124,26 @@ const ProfileImageUploader = ({
   };
 
   const handleSaveImage = async () => {
-    if (!selectedFile || !(currentUser as any)?.uid) return;
+    if (!selectedFile || !currentUser?.uid) return;
 
     try {
       setIsUploading(true);
       setError(null);
 
-      // Upload the image to Firebase Storage
-      const downloadUrl = await uploadProfileImage((currentUser as any).uid, selectedFile);
+      // Map AuthContext user to the parameters needed
+      const email = currentUser.email || "";
+      const userTypeMap = {
+        'customer': 'users',
+        'expert': 'experts',
+        'admin': 'users' // Default admin to users collection
+      };
+      const userType = userTypeMap[(currentUser as any).userType as keyof typeof userTypeMap] || 'users';
+
+      // Use the service that now handles all fields/collections
+      const downloadUrl = await updateProfileImage(currentUser.uid, selectedFile, email, userType);
 
       // Save the new URL to cache
-      saveImageToCache((currentUser as any).uid, downloadUrl);
+      saveImageToCache(currentUser.uid, downloadUrl);
 
       // Call the callback with the new image URL
       if (onImageUploaded) {
@@ -187,8 +197,8 @@ const ProfileImageUploader = ({
         <img
           src={previewUrl || imageUrl}
           alt="Profile"
-          className={`${getSizeClasses()} rounded-full object-cover border-4 border-white shadow-lg cursor-pointer transition-all duration-300 hover:shadow-xl`}
-          onClick={triggerFileUpload}
+          className={`${getSizeClasses()} rounded-full object-cover border-4 border-white shadow-lg ${isEditable ? 'cursor-pointer hover:shadow-xl' : 'cursor-default'} transition-all duration-300`}
+          onClick={isEditable ? triggerFileUpload : undefined}
         />
 
         {/* Upload Overlay */}
@@ -196,12 +206,12 @@ const ProfileImageUploader = ({
           <div className="absolute inset-0 bg-white bg-opacity-70 flex flex-col justify-center items-center gap-2 rounded-full">
             {isUploading ? (
               <>
-                <div className="w-12 h-12 border-4 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
-                <span className="text-purple-800 font-medium">Uploading...</span>
+                <div className="w-12 h-12 border-4 border-[#ccd853] border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-[#ccd853] font-medium">Uploading...</span>
               </>
             ) : (
               <>
-                <span className="text-purple-800 font-medium text-sm text-center px-2">
+                <span className="text-[#ccd853] font-medium text-sm text-center px-2">
                   Preview
                 </span>
               </>
@@ -227,28 +237,30 @@ const ProfileImageUploader = ({
       />
 
       {/* Upload Button */}
-      <button
-        onClick={triggerFileUpload}
-        disabled={isUploading}
-        className="mt-4 px-4 py-2 bg-purple-600 text-white rounded-full font-medium hover:bg-purple-700 transition-colors shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {isUploading ? 'Uploading...' : 'Upload Photo'}
-      </button>
+      {isEditable && (
+        <button
+          onClick={triggerFileUpload}
+          disabled={isUploading}
+          className="mt-4 px-6 py-2 bg-[#ccd853] text-black rounded-full font-bold hover:bg-[#b8c54a] transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm uppercase tracking-wider"
+        >
+          {isUploading ? 'Uploading...' : 'Upload Photo'}
+        </button>
+      )}
 
       {/* Action Buttons (when in preview mode) */}
       {previewUrl && (
-        <div className="absolute bottom-[-50px] left-1/2 transform -translate-x-1/2 flex gap-2">
+        <div className="mt-4 flex gap-3">
           <button
             onClick={handleSaveImage}
             disabled={isUploading}
-            className="px-3 py-1 bg-purple-600 text-white rounded-full text-sm font-medium hover:bg-purple-700 transition-colors disabled:opacity-50"
+            className="px-6 py-2 bg-[#ccd853] text-black rounded-full text-xs font-bold hover:bg-[#b8c54a] transition-all disabled:opacity-50 uppercase tracking-tight"
           >
             {isUploading ? 'Saving...' : 'Save'}
           </button>
           <button
             onClick={handleCancelUpload}
             disabled={isUploading}
-            className="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-300 transition-colors disabled:opacity-50"
+            className="px-6 py-2 bg-[#212121] text-white border border-[#454545] rounded-full text-xs font-bold hover:bg-[#333333] transition-all disabled:opacity-50 uppercase tracking-tight"
           >
             Cancel
           </button>

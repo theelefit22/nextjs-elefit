@@ -5,7 +5,9 @@ import { uploadProfileImage, deleteFile, getUserProfile } from "@/shared/firebas
  */
 export const updateProfileImage = async (
   uid: string,
-  file: File
+  file: File,
+  email?: string,
+  userType: string = "users"
 ): Promise<string> => {
   try {
     // Validate file
@@ -17,7 +19,7 @@ export const updateProfileImage = async (
       throw new Error("File size must be less than 5MB");
     }
 
-    const downloadUrl = await uploadProfileImage(uid, file);
+    const downloadUrl = await uploadProfileImage(uid, file, email, userType);
     return downloadUrl;
   } catch (error) {
     throw new Error(
@@ -123,7 +125,8 @@ export const compressImage = async (file: File): Promise<Blob> => {
 export const getProfileImageURL = async (uid: string): Promise<string | null> => {
   try {
     const profile = await getUserProfile(uid);
-    return profile?.profileImageUrl || null;
+    // Check both field names for compatibility with reference logic
+    return profile?.profileImageUrl || profile?.profileImageURL || null;
   } catch (error) {
     console.error("Error getting profile image URL:", error);
     return null;

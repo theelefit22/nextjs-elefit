@@ -424,12 +424,44 @@ export const deleteFile = async (path: string) => {
  */
 export const uploadProfileImage = async (
   uid: string,
-  file: File
+  file: File,
+  email?: string,
+  userType: string = "users"
 ): Promise<string> => {
   try {
-    const fileName = `${Date.now()}-${file.name}`;
-    const downloadUrl = await uploadFile(file, `profiles/${uid}/${fileName}`);
-    await updateUserProfile(uid, { profileImageUrl: downloadUrl });
+    // Determine email for storage path (required by user's firebase structure)
+    const userEmail = email || auth.currentUser?.email;
+    if (!userEmail) {
+      throw new Error("User email is required for profile image upload");
+    }
+
+    const fileExtension = file.name.split(".").pop();
+    // Structure: [email]/media/profile-image.[ext]
+    const storagePath = `${userEmail}/media/profile-image.${fileExtension}`;
+    const downloadUrl = await uploadFile(file, storagePath);
+
+    // Update main user document with multiple field names for compatibility
+    const userRef = doc(db, userType, uid);
+    await updateDoc(userRef, {
+      profileImageUrl: downloadUrl,    // camelCase
+      profileImageURL: downloadUrl,    // UPPERCASE
+      "userMedia.profileImage": downloadUrl, // Nested
+      updatedAt: new Date(),
+    });
+
+    // Update usersMedia collection as per reference
+    try {
+      const mediaDocRef = doc(db, "usersMedia", uid);
+      await setDoc(mediaDocRef, {
+        profileImageURL: downloadUrl,
+        email: userEmail,
+        userType: userType === "users" ? "user" : userType,
+        lastUpdated: new Date(),
+      }, { merge: true });
+    } catch (mediaError) {
+      console.error("Error updating usersMedia:", mediaError);
+    }
+
     return downloadUrl;
   } catch (error) {
     throw new Error(

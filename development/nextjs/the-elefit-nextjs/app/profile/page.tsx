@@ -78,6 +78,7 @@ function ProfileContent() {
     const [loadingPlans, setLoadingPlans] = useState(false);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
     const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' | '' }>({
         text: '',
         type: '',
@@ -184,6 +185,7 @@ function ProfileContent() {
             };
             await updateUserProfile(currentUser.uid, dataToSave);
             setMessage({ text: 'Profile updated successfully!', type: 'success' });
+            setIsEditing(false);
             setTimeout(() => setMessage({ text: '', type: '' }), 3000);
         } catch (error) {
             console.error('Error updating profile:', error);
@@ -231,7 +233,11 @@ function ProfileContent() {
                         <div className="relative group">
                             <ProfileImageUploader
                                 size="large"
-                                onImageUploaded={url => console.log('Profile image updated:', url)}
+                                isEditable={isEditing}
+                                onImageUploaded={url => {
+                                    console.log('Profile image updated:', url);
+                                    // Refresh user data if needed or just let the component handle it
+                                }}
                             />
                         </div>
                         <h2 className="mt-4 text-xl font-bold tracking-tight">
@@ -279,16 +285,18 @@ function ProfileContent() {
                                         <div className="space-y-2">
                                             <label className="text-xs font-bold text-[#828282]">First Name</label>
                                             <input
-                                                className="w-full h-10 border border-[#454545] bg-[#212121] rounded-lg px-4 text-sm focus:outline-none focus:border-[#ccd853] transition-colors"
+                                                className={`w-full h-10 border border-[#454545] bg-[#212121] rounded-lg px-4 text-sm focus:outline-none focus:border-[#ccd853] transition-colors ${!isEditing ? 'opacity-60 cursor-not-allowed' : ''}`}
                                                 value={userData.firstName}
+                                                readOnly={!isEditing}
                                                 onChange={(e) => handleInputChange('firstName', e.target.value)}
                                             />
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-xs font-bold text-[#828282]">Last Name</label>
                                             <input
-                                                className="w-full h-10 border border-[#454545] bg-[#212121] rounded-lg px-4 text-sm focus:outline-none focus:border-[#ccd853] transition-colors"
+                                                className={`w-full h-10 border border-[#454545] bg-[#212121] rounded-lg px-4 text-sm focus:outline-none focus:border-[#ccd853] transition-colors ${!isEditing ? 'opacity-60 cursor-not-allowed' : ''}`}
                                                 value={userData.lastName}
+                                                readOnly={!isEditing}
                                                 onChange={(e) => handleInputChange('lastName', e.target.value)}
                                             />
                                         </div>
@@ -301,26 +309,30 @@ function ProfileContent() {
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-xs font-bold text-[#828282]">Phone</label>
-                                            <PhoneInputMockup
-                                                value={userData.phone}
-                                                onChange={(val) => handleInputChange('phone', val)}
-                                            />
+                                            <div className={!isEditing ? 'opacity-60 cursor-not-allowed pointer-events-none' : ''}>
+                                                <PhoneInputMockup
+                                                    value={userData.phone}
+                                                    onChange={(val) => handleInputChange('phone', val)}
+                                                />
+                                            </div>
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-xs font-bold text-[#828282]">Age</label>
                                             <input
                                                 type="number"
-                                                className="w-full h-10 border border-[#454545] bg-[#212121] rounded-lg px-4 text-sm focus:outline-none focus:border-[#ccd853] transition-colors"
+                                                className={`w-full h-10 border border-[#454545] bg-[#212121] rounded-lg px-4 text-sm focus:outline-none focus:border-[#ccd853] transition-colors ${!isEditing ? 'opacity-60 cursor-not-allowed' : ''}`}
                                                 value={userData.age}
+                                                readOnly={!isEditing}
                                                 onChange={(e) => handleInputChange('age', e.target.value)}
                                             />
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-xs font-bold text-[#828282]">Gender</label>
-                                            <div className="relative">
+                                            <div className={`relative ${!isEditing ? 'opacity-60 cursor-not-allowed pointer-events-none' : ''}`}>
                                                 <select
                                                     className="w-full h-10 border border-[#454545] bg-[#212121] rounded-lg px-4 text-sm appearance-none focus:outline-none focus:border-[#ccd853] transition-colors"
                                                     value={userData.gender}
+                                                    disabled={!isEditing}
                                                     onChange={(e) => handleInputChange('gender', e.target.value)}
                                                 >
                                                     <option value="male">Male</option>
@@ -342,8 +354,9 @@ function ProfileContent() {
                                             <div className="relative">
                                                 <input
                                                     type="number"
-                                                    className="w-full h-10 border border-[#454545] bg-[#212121] rounded-lg px-4 text-sm pr-12 focus:outline-none focus:border-[#ccd853] transition-colors"
+                                                    className={`w-full h-10 border border-[#454545] bg-[#212121] rounded-lg px-4 text-sm pr-12 focus:outline-none focus:border-[#ccd853] transition-colors ${!isEditing ? 'opacity-60 cursor-not-allowed' : ''}`}
                                                     value={userData.height}
+                                                    readOnly={!isEditing}
                                                     onChange={(e) => handleInputChange('height', e.target.value)}
                                                 />
                                                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-[#828282]">cm</span>
@@ -354,8 +367,9 @@ function ProfileContent() {
                                             <div className="relative">
                                                 <input
                                                     type="number"
-                                                    className="w-full h-10 border border-[#454545] bg-[#212121] rounded-lg px-4 text-sm pr-12 focus:outline-none focus:border-[#ccd853] transition-colors"
+                                                    className={`w-full h-10 border border-[#454545] bg-[#212121] rounded-lg px-4 text-sm pr-12 focus:outline-none focus:border-[#ccd853] transition-colors ${!isEditing ? 'opacity-60 cursor-not-allowed' : ''}`}
                                                     value={userData.weight}
+                                                    readOnly={!isEditing}
                                                     onChange={(e) => handleInputChange('weight', e.target.value)}
                                                 />
                                                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-[#828282]">kg</span>
@@ -363,10 +377,11 @@ function ProfileContent() {
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-xs font-bold text-[#828282]">Activity Level</label>
-                                            <div className="relative">
+                                            <div className={`relative ${!isEditing ? 'opacity-60 cursor-not-allowed pointer-events-none' : ''}`}>
                                                 <select
                                                     className="w-full h-10 border border-[#454545] bg-[#212121] rounded-lg px-4 text-sm appearance-none focus:outline-none focus:border-[#ccd853] transition-colors"
                                                     value={userData.activityLevel}
+                                                    disabled={!isEditing}
                                                     onChange={(e) => handleInputChange('activityLevel', e.target.value)}
                                                 >
                                                     <option value="sedentary">Sedentary</option>
@@ -383,9 +398,10 @@ function ProfileContent() {
                                         <div className="space-y-2">
                                             <label className="text-xs font-bold text-[#828282]">Health Goals</label>
                                             <textarea
-                                                className="w-full h-24 border border-[#454545] bg-[#212121] rounded-lg p-4 text-sm resize-none focus:outline-none focus:border-[#ccd853] transition-colors"
+                                                className={`w-full h-24 border border-[#454545] bg-[#212121] rounded-lg p-4 text-sm resize-none focus:outline-none focus:border-[#ccd853] transition-colors ${!isEditing ? 'opacity-60 cursor-not-allowed' : ''}`}
                                                 placeholder="Enter your health goals..."
                                                 value={userData.healthGoals}
+                                                readOnly={!isEditing}
                                                 onChange={(e) => handleInputChange('healthGoals', e.target.value)}
                                             />
                                         </div>
@@ -394,8 +410,9 @@ function ProfileContent() {
                                             <div className="relative">
                                                 <input
                                                     type="number"
-                                                    className="w-full h-10 border border-[#454545] bg-[#212121] rounded-lg px-4 text-sm pr-12 focus:outline-none focus:border-[#ccd853] transition-colors"
+                                                    className={`w-full h-10 border border-[#454545] bg-[#212121] rounded-lg px-4 text-sm pr-12 focus:outline-none focus:border-[#ccd853] transition-colors ${!isEditing ? 'opacity-60 cursor-not-allowed' : ''}`}
                                                     value={userData.targetWeight}
+                                                    readOnly={!isEditing}
                                                     onChange={(e) => handleInputChange('targetWeight', e.target.value)}
                                                 />
                                                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-[#828282]">kg</span>
@@ -408,18 +425,20 @@ function ProfileContent() {
                                         <div className="space-y-2">
                                             <label className="text-xs font-bold text-[#828282]">Dietary Restrictions</label>
                                             <textarea
-                                                className="w-full h-24 border border-[#454545] bg-[#212121] rounded-lg p-4 text-sm resize-none focus:outline-none focus:border-[#ccd853] transition-colors"
+                                                className={`w-full h-24 border border-[#454545] bg-[#212121] rounded-lg p-4 text-sm resize-none focus:outline-none focus:border-[#ccd853] transition-colors ${!isEditing ? 'opacity-60 cursor-not-allowed' : ''}`}
                                                 placeholder="Eg., No dairy, Vegetarian..."
                                                 value={userData.dietaryRestrictions}
+                                                readOnly={!isEditing}
                                                 onChange={(e) => handleInputChange('dietaryRestrictions', e.target.value)}
                                             />
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-xs font-bold text-[#828282]">Allergies</label>
                                             <textarea
-                                                className="w-full h-24 border border-[#454545] bg-[#212121] rounded-lg p-4 text-sm resize-none focus:outline-none focus:border-[#ccd853] transition-colors"
+                                                className={`w-full h-24 border border-[#454545] bg-[#212121] rounded-lg p-4 text-sm resize-none focus:outline-none focus:border-[#ccd853] transition-colors ${!isEditing ? 'opacity-60 cursor-not-allowed' : ''}`}
                                                 placeholder="Eg., Peanuts, Shellfish..."
                                                 value={userData.allergies}
+                                                readOnly={!isEditing}
                                                 onChange={(e) => handleInputChange('allergies', e.target.value)}
                                             />
                                         </div>
@@ -427,14 +446,32 @@ function ProfileContent() {
                                 </div>
 
                                 {/* Save Button */}
-                                <div className="flex justify-end pt-8">
-                                    <Button
-                                        onClick={handleSave}
-                                        disabled={saving}
-                                        className="bg-[#ccd853] text-black font-bold h-12 px-12 rounded-xl hover:bg-[#b8c54a] transition-all transform active:scale-95"
-                                    >
-                                        {saving ? 'SAVING...' : 'SAVE CHANGES'}
-                                    </Button>
+                                <div className="flex flex-col sm:flex-row justify-end pt-8 gap-4">
+                                    {!isEditing ? (
+                                        <Button
+                                            onClick={() => setIsEditing(true)}
+                                            className="bg-[#ccd853] text-black font-bold h-12 px-12 rounded-xl hover:bg-[#b8c54a] transition-all transform active:scale-95 w-full sm:w-auto"
+                                        >
+                                            EDIT
+                                        </Button>
+                                    ) : (
+                                        <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+                                            <Button
+                                                onClick={() => setIsEditing(false)}
+                                                variant="outline"
+                                                className="border-[#454545] text-white font-bold h-12 px-8 rounded-xl hover:bg-[#212121] transition-all w-full sm:w-6/12"
+                                            >
+                                                CANCEL
+                                            </Button>
+                                            <Button
+                                                onClick={handleSave}
+                                                disabled={saving}
+                                                className="bg-[#ccd853] text-black font-bold h-12 px-12 rounded-xl hover:bg-[#b8c54a] transition-all transform active:scale-95 w-full sm:w-6/12"
+                                            >
+                                                {saving ? 'SAVING...' : 'SAVE CHANGES'}
+                                            </Button>
+                                        </div>
+                                    )}
                                 </div>
                                 {message.text && (
                                     <p className={`text-center text-sm font-bold ${message.type === 'success' ? 'text-green-500' : 'text-red-500'}`}>

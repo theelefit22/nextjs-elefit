@@ -24,7 +24,10 @@ export function parseMealPlan(text: string): WeeklyMeals {
     const weeklyMeals: WeeklyMeals = [];
     // Split by Day X markers, keeping the marker in the segment
     const daySegments = text.split(/(?=Day\s*\d+[:\s\u2013\u2014-])/i)
-        .filter(d => d.trim() && /^Day\s*\d+/i.test(d.trim()));
+        .filter(d => {
+            const trimmed = d.trim();
+            return trimmed && (/^Day\s*\d+/i.test(trimmed) || /Breakfast|Lunch|Dinner|Snack|Workout|Exercise/i.test(trimmed));
+        });
 
     daySegments.forEach((dayText, index) => {
         if (index >= 7) return;
@@ -88,7 +91,10 @@ export function parseWorkoutPlan(text: string): WeeklyWorkouts {
     const weeklyWorkouts: WeeklyWorkouts = [];
     // Split by Day X markers, keeping the marker in the segment
     const daySegments = text.split(/(?=Day\s*\d+[:\s\u2013\u2014-])/i)
-        .filter(d => d.trim() && /^Day\s*\d+/i.test(d.trim()));
+        .filter(d => {
+            const trimmed = d.trim();
+            return trimmed && (/^Day\s*\d+/i.test(trimmed) || /Breakfast|Lunch|Dinner|Snack|Workout|Exercise/i.test(trimmed));
+        });
 
     daySegments.forEach((dayText, index) => {
         if (index >= 7) return;
