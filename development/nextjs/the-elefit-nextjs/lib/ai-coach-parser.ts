@@ -23,13 +23,14 @@ export type WeeklyWorkouts = WorkoutPlan[];
 export function parseMealPlan(text: string): WeeklyMeals {
     const weeklyMeals: WeeklyMeals = [];
     // Split by Day X markers, keeping the marker in the segment
-    const daySegments = text.split(/(?=Day\s*\d+[:\s\u2013\u2014-])/i).filter(d => d.trim());
+    const daySegments = text.split(/(?=Day\s*\d+[:\s\u2013\u2014-])/i)
+        .filter(d => d.trim() && /^Day\s*\d+/i.test(d.trim()));
 
     daySegments.forEach((dayText, index) => {
         if (index >= 7) return;
         const dayMeals: Record<string, MealItem[]> = {};
 
-        const mealSections = dayText.split(/\- (Breakfast|Lunch|Snack|Dinner|Snacks)\s*\((\d+)[^)]*\)\s*:/i);
+        const mealSections = dayText.split(/[—\-–\u2013\u2014]\s*(Breakfast|Lunch|Snack|Dinner|Snacks)\s*\((\d+)[^)]*\)\s*:/i);
 
         for (let i = 1; i < mealSections.length; i += 3) {
             let mealType = mealSections[i].trim();
@@ -39,7 +40,7 @@ export function parseMealPlan(text: string): WeeklyMeals {
 
             const itemLines = itemsText.split('\n');
             itemLines.forEach(line => {
-                const match = line.match(/^\s*\d+\.\s*(.*?)\s*[—\-–]+\s*(.*?)\s*[—\-–]+\s*(\d+(?:\.\d+)?)\s*kcal\s*[—\-–]+\s*(.*)$/i);
+                const match = line.match(/^\s*\d+\.\s*(.*?)\s*[—\-–\u2013\u2014]+\s*(.*?)\s*[—\-–\u2013\u2014]+\s*(\d+(?:\.\d+)?)\s*kcal\s*[—\-–\u2013\u2014]+\s*(.*)$/i);
                 if (match) {
                     items.push({
                         name: match[1].trim(),
@@ -48,7 +49,7 @@ export function parseMealPlan(text: string): WeeklyMeals {
                         macro: match[4].trim().replace(/\//g, ' • ')
                     });
                 } else {
-                    const simpleMatch = line.match(/^\s*\d+\.\s*(.*?)\s*[—\-–]+\s*(.*?)\s*[—\-–]+\s*(\d+(?:\.\d+)?)\s*kcal/i);
+                    const simpleMatch = line.match(/^\s*\d+\.\s*(.*?)\s*[—\-–\u2013\u2014]+\s*(.*?)\s*[—\-–\u2013\u2014]+\s*(\d+(?:\.\d+)?)\s*kcal/i);
                     if (simpleMatch) {
                         items.push({
                             name: simpleMatch[1].trim(),
@@ -56,6 +57,17 @@ export function parseMealPlan(text: string): WeeklyMeals {
                             calories: parseInt(simpleMatch[3]),
                             macro: 'Modified'
                         });
+                    } else {
+                        // Very simple match: "1. Food — 200 kcal" (no quantity)
+                        const verySimpleMatch = line.match(/^\s*\d+\.\s*(.*?)\s*[—\-–\u2013\u2014]+\s*(\d+(?:\.\d+)?)\s*kcal/i);
+                        if (verySimpleMatch) {
+                            items.push({
+                                name: verySimpleMatch[1].trim(),
+                                quantity: 'As specified',
+                                calories: parseInt(verySimpleMatch[2]),
+                                macro: 'Modified'
+                            });
+                        }
                     }
                 }
             });
@@ -75,7 +87,8 @@ export function parseMealPlan(text: string): WeeklyMeals {
 export function parseWorkoutPlan(text: string): WeeklyWorkouts {
     const weeklyWorkouts: WeeklyWorkouts = [];
     // Split by Day X markers, keeping the marker in the segment
-    const daySegments = text.split(/(?=Day\s*\d+[:\s\u2013\u2014-])/i).filter(d => d.trim());
+    const daySegments = text.split(/(?=Day\s*\d+[:\s\u2013\u2014-])/i)
+        .filter(d => d.trim() && /^Day\s*\d+/i.test(d.trim()));
 
     daySegments.forEach((dayText, index) => {
         if (index >= 7) return;

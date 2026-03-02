@@ -1,7 +1,7 @@
 "use client";
 
 import { Header } from '@/components/Header';
-import { BottomNav } from '@/components/BottomNav';
+import BottomNavNew from '@/components/BottomNavNew';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2 } from 'lucide-react';
@@ -107,7 +107,7 @@ export default function ApplyExpertPage() {
                 </div>
             </div>
 
-            <BottomNav />
+            <BottomNavNew />
         </div>
     );
 }

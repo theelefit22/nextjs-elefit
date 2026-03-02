@@ -4,7 +4,6 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { BottomNav } from '@/components/BottomNav';
 import BottomNavNew from '@/components/BottomNavNew';
 import MobileNavDrawer from '@/components/MobileNavDrawer';
 

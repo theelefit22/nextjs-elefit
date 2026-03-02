@@ -80,7 +80,7 @@ export const generatePlanPDF = (data: PDFData) => {
             head: [['Day', 'Meal', 'Food Item', 'Qty', 'Cals', 'Macros']],
             body: mealTableData,
             theme: 'striped',
-            headStyles: { fillColor: primaryColor, textColor: [0, 0, 0], fontStyle: 'bold' },
+            headStyles: { fillColor: primaryColor as [number, number, number], textColor: [0, 0, 0], fontStyle: 'bold' },
             styles: { fontSize: 8, cellPadding: 3 },
             columnStyles: {
                 0: { fontStyle: 'bold', cellWidth: 25 },

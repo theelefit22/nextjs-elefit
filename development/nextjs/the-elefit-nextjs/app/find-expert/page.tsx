@@ -1,7 +1,7 @@
 "use client";
 
 import { Header } from '@/components/Header';
-import { BottomNav } from '@/components/BottomNav';
+import BottomNavNew from '@/components/BottomNavNew';
 import { Star, MapPin, Award } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -74,7 +74,7 @@ export default function FindExpertPage() {
                 </div>
             </div>
 
-            <BottomNav />
+            <BottomNavNew />
         </div>
     );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { Header } from '@/components/Header';
-import { BottomNav } from '@/components/BottomNav';
+import BottomNavNew from '@/components/BottomNavNew';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
@@ -31,7 +31,7 @@ export default function UnauthorizedPage() {
                 </div>
             </div>
 
-            <BottomNav />
+            <BottomNavNew />
         </div>
     );
 }
