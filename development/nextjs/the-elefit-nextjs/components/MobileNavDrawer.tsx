@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { X } from 'lucide-react';
 
@@ -15,6 +15,7 @@ export default function MobileNavDrawer({ title }: MobileNavDrawerProps) {
     const [isOpen, setIsOpen] = useState(false);
     const { user: currentUserByAuth, isAuthenticated, logout } = useAuth();
     const router = useRouter();
+    const pathname = usePathname();
 
     const handleLogout = async () => {
         try {
@@ -84,27 +85,14 @@ export default function MobileNavDrawer({ title }: MobileNavDrawerProps) {
 
                 {/* Nav Links */}
                 <nav className="flex flex-col flex-1 px-4 py-6 gap-1">
-                    {[
-                        { href: '/', label: 'Home' },
-                        { href: '/community', label: 'Community' },
-                        { href: '/find-expert', label: 'Find Expert' },
-                        { href: '/apply-expert', label: 'Apply as Expert' },
-                    ].map(({ href, label }) => (
-                        <Link
-                            key={href}
-                            href={href}
-                            onClick={() => setIsOpen(false)}
-                            className="flex items-center px-4 py-3.5 rounded-2xl text-sm font-semibold text-white/70 hover:text-white hover:bg-white/5 transition-all"
-                        >
-                            {label}
-                        </Link>
-                    ))}
-
-                    {/* AI Coach – highlighted */}
+                    {/* AI Coach – highlighted only when active */}
                     <Link
                         href="/ai-coach/welcome"
                         onClick={() => setIsOpen(false)}
-                        className="flex items-center px-4 py-3.5 rounded-2xl text-sm font-black text-black bg-primary hover:bg-primary/90 transition-all mt-2"
+                        className={`flex items-center px-4 py-3.5 rounded-2xl text-sm transition-all ${pathname?.startsWith('/ai-coach')
+                                ? 'font-black text-black bg-primary'
+                                : 'font-semibold text-white/70 hover:text-white hover:bg-white/5'
+                            }`}
                     >
                         AI Coach
                     </Link>

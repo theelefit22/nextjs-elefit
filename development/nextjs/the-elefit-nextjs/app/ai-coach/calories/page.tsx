@@ -116,59 +116,62 @@ export default function Calories() {
             setError(null);
             updateData({ mealPlan: null, workoutPlan: null });
 
-            // 1. Generate Meal Plan
-            const mealResponse = await fetch('https://backend-aicoach.onrender.com/mealplan', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    targetCalories: data.calculatedData?.targetCalories,
-                    dietaryRestrictions: data.dietaryTags,
-                    healthGoals: data.prompt,
-                    prompt: data.prompt,
-                    targetWeight: data.targetWeight,
-                    timelineWeeks: data.timelineUnit === 'months' ? parseInt(data.timelineValue) * 4 : parseInt(data.timelineValue),
-                    weight: data.currentWeight,
-                    capped: data.calculatedData?.capped
-                }),
-            });
-
-            if (!mealResponse.ok) throw new Error('Meal plan generation failed');
-
-            // Read meal stream
-            const mealReader = mealResponse.body?.getReader();
             let mealText = '';
-            if (mealReader) {
-                while (true) {
-                    const { done, value } = await mealReader.read();
-                    if (done) break;
-                    mealText += new TextDecoder().decode(value);
+            let workoutText = '';
+
+            // 1. Generate Meal Plan (Conditional)
+            if (data.helpType === 'meal' || data.helpType === 'both') {
+                const mealResponse = await fetch('https://backend-aicoach.onrender.com/mealplan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        targetCalories: data.calculatedData?.targetCalories,
+                        dietaryRestrictions: data.dietaryTags,
+                        healthGoals: data.prompt,
+                        prompt: data.prompt,
+                        targetWeight: data.targetWeight,
+                        timelineWeeks: data.timelineUnit === 'months' ? parseInt(data.timelineValue) * 4 : parseInt(data.timelineValue),
+                        weight: data.currentWeight,
+                        capped: data.calculatedData?.capped
+                    }),
+                });
+
+                if (!mealResponse.ok) throw new Error('Meal plan generation failed');
+
+                const mealReader = mealResponse.body?.getReader();
+                if (mealReader) {
+                    while (true) {
+                        const { done, value } = await mealReader.read();
+                        if (done) break;
+                        mealText += new TextDecoder().decode(value);
+                    }
                 }
             }
 
-            // 2. Generate Workout Plan
-            const workoutResponse = await fetch('https://backend-aicoach.onrender.com/workoutplan', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    goal: data.prompt,
-                    workoutFocus: data.calculatedData?.workoutFocus,
-                    days: data.workoutDays,
-                    targetWeight: data.targetWeight,
-                    timelineWeeks: data.timelineUnit === 'months' ? parseInt(data.timelineValue) * 4 : parseInt(data.timelineValue),
-                    prompt: data.prompt
-                }),
-            });
+            // 2. Generate Workout Plan (Conditional)
+            if (data.helpType === 'workout' || data.helpType === 'both') {
+                const workoutResponse = await fetch('https://backend-aicoach.onrender.com/workoutplan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        goal: data.prompt,
+                        workoutFocus: data.calculatedData?.workoutFocus,
+                        days: data.workoutDays,
+                        targetWeight: data.targetWeight,
+                        timelineWeeks: data.timelineUnit === 'months' ? parseInt(data.timelineValue) * 4 : parseInt(data.timelineValue),
+                        prompt: data.prompt
+                    }),
+                });
 
-            if (!workoutResponse.ok) throw new Error('Workout plan generation failed');
+                if (!workoutResponse.ok) throw new Error('Workout plan generation failed');
 
-            // Read workout stream
-            const workoutReader = workoutResponse.body?.getReader();
-            let workoutText = '';
-            if (workoutReader) {
-                while (true) {
-                    const { done, value } = await workoutReader.read();
-                    if (done) break;
-                    workoutText += new TextDecoder().decode(value);
+                const workoutReader = workoutResponse.body?.getReader();
+                if (workoutReader) {
+                    while (true) {
+                        const { done, value } = await workoutReader.read();
+                        if (done) break;
+                        workoutText += new TextDecoder().decode(value);
+                    }
                 }
             }
 
@@ -260,10 +263,16 @@ export default function Calories() {
                             <div className="space-y-6">
                                 <div className="h-32 rounded-3xl bg-white/5 animate-pulse flex flex-col items-center justify-center p-6 text-center">
                                     <p className="text-primary font-black text-sm uppercase tracking-widest animate-pulse">
-                                        {data.mealPlan ? 'Finalizing...' : (calorieData.dailyCalories > 0 ? 'Generating Your Plan...' : 'Calculating Macros...')}
+                                        {calorieData.dailyCalories > 0
+                                            ? (data.helpType === 'meal' ? 'Generating Meal Plan...'
+                                                : data.helpType === 'workout' ? 'Generating Workout Plan...'
+                                                    : 'Generating Your Plans...')
+                                            : 'Calculating Macros...'}
                                     </p>
                                     <p className="text-white/40 text-[11px] mt-2">
-                                        {data.mealPlan ? 'Creating your workout schedule' : 'AI is crafting your personalized meal plan'}
+                                        {data.helpType === 'workout'
+                                            ? 'Crafting your personalized workout schedule'
+                                            : 'AI is crafting your tailored fitness journey'}
                                     </p>
                                 </div>
                                 <div className="grid grid-cols-3 gap-3">

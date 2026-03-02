@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, ChevronRight, ChevronDown, Download, ThumbsUp, ThumbsDown, ArrowLeft } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, Download, ThumbsUp, ThumbsDown, ArrowLeft, Bookmark } from 'lucide-react';
 import BottomNavNew from '@/components/BottomNavNew';
 import { Header } from '@/components/Header';
 import MobileNavDrawer from '@/components/MobileNavDrawer';
@@ -12,6 +12,7 @@ import { saveUserPlan, getPlanById, getCurrentUser } from '@/shared/firebase';
 import { useSearchParams } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { generatePlanPDF } from '@/lib/pdf-utils';
 
 const DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 const MEAL_TIMES = ['Breakfast', 'Lunch', 'Snacks', 'Dinner'];
@@ -60,6 +61,17 @@ function ScheduleContent() {
     const [planName, setPlanName] = useState('My Custom Plan');
     const [isSaving, setIsSaving] = useState(false);
     const [isPlanSaved, setIsPlanSaved] = useState(false);
+    const [isSaveEditDrawerOpen, setIsSaveEditDrawerOpen] = useState(false);
+
+    // Timer for Save/Edit Drawer (2 minutes)
+    useEffect(() => {
+        if (!planId && !isPlanSaved) {
+            const timer = setTimeout(() => {
+                setIsSaveEditDrawerOpen(true);
+            }, 120000); // 2 minutes
+            return () => clearTimeout(timer);
+        }
+    }, [planId, isPlanSaved]);
 
     // Fetch plan if planId is present
     useEffect(() => {
@@ -111,7 +123,7 @@ function ScheduleContent() {
                 fullDate: date
             };
         });
-    }, []);
+    }, [headerData.genDate]);
 
     const toggleSection = (id: string) => {
         setExpandedSections(prev => ({ ...prev, [id]: !prev[id] }));
@@ -191,6 +203,15 @@ function ScheduleContent() {
                             <span className="text-2xl hidden md:inline">📅</span>
                             <h1 className="text-xl md:text-3xl font-bold tracking-tight text-white">Weekly Schedule</h1>
                         </div>
+
+                        {/* Bookmark Button - Right End */}
+                        <button
+                            onClick={() => setIsSaveEditDrawerOpen(true)}
+                            className="absolute right-0 h-10 w-10 flex items-center justify-center rounded-full bg-white/5 text-white hover:bg-white/10 transition-all border border-white/10 active:scale-95 group"
+                            title="Save/Edit Plan"
+                        >
+                            <Bookmark className="h-5 w-5 group-hover:fill-primary group-hover:text-primary transition-colors" />
+                        </button>
                     </div>
                     {/* Date Selector Navigation */}
                     <div className="flex items-center justify-between md:justify-center gap-4 md:gap-8 mb-12">
@@ -260,9 +281,12 @@ function ScheduleContent() {
                                 </div>
                             </div>
 
-                            <button className="flex items-center justify-center h-10 w-10 md:w-auto md:h-auto md:bg-transparent md:border md:border-primary/30 text-primary font-bold text-xs uppercase tracking-widest md:px-6 md:py-2.5 rounded-xl hover:bg-primary/5 transition-all group">
+                            <button
+                                onClick={() => generatePlanPDF({ headerData, parsedMeals, parsedWorkouts, scheduleDates })}
+                                className="flex items-center justify-center h-10 w-10 md:w-auto md:h-auto md:bg-transparent md:border md:border-primary/30 text-primary font-bold text-xs uppercase tracking-widest md:px-6 md:py-2.5 rounded-xl hover:bg-primary/5 transition-all group"
+                            >
                                 <Download className="h-5 w-5 md:h-4 md:w-4 group-hover:translate-y-0.5 transition-transform" />
-                                <span className="hidden md:inline ml-2">Download</span>
+                                <span className="hidden md:inline ml-2">Download Plan</span>
                             </button>
                         </div>
 
@@ -354,40 +378,43 @@ function ScheduleContent() {
                                         </span>
                                     </div>
 
-                                    {/* Workout Grid */}
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 items-start">
-                                        {(() => {
-                                            const workout = parsedWorkouts ? parsedWorkouts[selectedDayIndex] : null;
-                                            if (!workout) return <div key="empty" className="col-span-full py-12 text-center text-white/20">No workout data available</div>;
+                                    {/* Workout Grid - Centered on Desktop */}
+                                    <div className="flex md:justify-center items-start">
+                                        <div className="w-full md:max-w-md">
+                                            {(() => {
+                                                const workout = parsedWorkouts ? parsedWorkouts[selectedDayIndex] : null;
+                                                if (!workout) return <div key="empty" className="py-12 text-center text-white/20">No workout data available</div>;
 
-                                            return (
-                                                <CollapsibleSection
-                                                    key={selectedDayIndex}
-                                                    id={`workout-${selectedDayIndex}`}
-                                                    title={workout.isRestDay ? 'Rest Day' : 'Workout Focus'}
-                                                    rightLabel={workout.duration}
-                                                    icon="🏋️"
-                                                >
-                                                    <div className="space-y-6 pt-2">
-                                                        <div className="group space-y-2">
-                                                            <p className="font-black text-white text-base tracking-tight leading-tight group-hover:text-primary transition-colors">{workout.name}</p>
-                                                            <div className="flex items-center gap-2 bg-[#1a1a1a] px-3 py-1.5 rounded-lg border border-[#212121]/50 w-fit">
-                                                                <span className="text-sm">⏱️</span>
-                                                                <p className="text-[10px] font-black uppercase tracking-widest text-[#898989]">{workout.duration}</p>
+                                                return (
+                                                    <CollapsibleSection
+                                                        key={selectedDayIndex}
+                                                        id={`workout-${selectedDayIndex}`}
+                                                        title={workout.isRestDay ? 'Rest Day' : workout.name}
+                                                        rightLabel={workout.duration && !workout.duration.toLowerCase().includes('0 min') ? workout.duration : undefined}
+                                                        icon="🏋️"
+                                                    >
+                                                        <div className="space-y-6 pt-2">
+                                                            {workout.duration && !workout.duration.toLowerCase().includes('0 min') && (
+                                                                <div className="group space-y-2">
+                                                                    <div className="flex items-center gap-2 bg-[#1a1a1a] px-3 py-1.5 rounded-lg border border-[#212121]/50 w-fit">
+                                                                        <span className="text-sm">⏱️</span>
+                                                                        <p className="text-[10px] font-black uppercase tracking-widest text-[#898989]">{workout.duration}</p>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                            <div className="space-y-3">
+                                                                {workout.exercises.map((exercise: string, i: number) => (
+                                                                    <div key={i} className="flex items-center gap-3 group/ex">
+                                                                        <div className="h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(204,216,83,0.5)] transition-transform group-hover/ex:scale-125" />
+                                                                        <span className="text-xs text-[#898989] font-bold group-hover/ex:text-white transition-colors">{exercise}</span>
+                                                                    </div>
+                                                                ))}
                                                             </div>
                                                         </div>
-                                                        <div className="space-y-3">
-                                                            {workout.exercises.map((exercise: string, i: number) => (
-                                                                <div key={i} className="flex items-center gap-3 group/ex">
-                                                                    <div className="h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(204,216,83,0.5)] transition-transform group-hover/ex:scale-125" />
-                                                                    <span className="text-xs text-[#898989] font-bold group-hover/ex:text-white transition-colors">{exercise}</span>
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                </CollapsibleSection>
-                                            );
-                                        })()}
+                                                    </CollapsibleSection>
+                                                );
+                                            })()}
+                                        </div>
                                     </div>
                                 </>
                             ) : (
@@ -445,28 +472,46 @@ function ScheduleContent() {
                     </div>
                 </div>
 
-                {/* Action Footer Bar */}
-                {
-                    !planId && !isPlanSaved && (
-                        <div className="fixed bottom-[75px] left-0 right-0 z-40 bg-[#1e1e1a] border-t border-[#2d2d2d] px-6 py-4 flex items-center justify-between shadow-[0_-8px_20px_rgba(0,0,0,0.5)]">
-                            <span className="text-[11px] font-medium text-[#898989]">You can save / edit this plan</span>
-                            <div className="flex items-center gap-4">
+                {/* Bottom Drawer (Save/Edit Plan) */}
+                <div className={`fixed inset-0 z-50 flex items-end md:items-center justify-center transition-opacity duration-300 ${isSaveEditDrawerOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                    {/* Backdrop overlay */}
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsSaveEditDrawerOpen(false)} />
+
+                    <div className={`relative w-full md:max-w-md bg-[#111] rounded-t-[40px] md:rounded-[40px] border-t md:border border-white/10 px-6 pt-2 pb-32 md:pb-12 h-auto transition-transform duration-500 ease-out ${isSaveEditDrawerOpen ? 'translate-y-0' : 'translate-y-full'}`}>
+                        {/* Drag Handle Area */}
+                        <div className="w-full pt-2 pb-6 flex justify-center">
+                            <div className="w-12 h-1 bg-white/20 rounded-full" />
+                        </div>
+
+                        {/* Drawer Content */}
+                        <div className="pb-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <div className="space-y-3">
+                                <h2 className="text-[22px] font-black text-white tracking-tight">You can save / edit this plan</h2>
+                                <p className="text-sm font-medium text-white/40 leading-relaxed">
+                                    Want to keep this for later or make some changes to your fitness goal?
+                                </p>
+                            </div>
+
+                            <div className="space-y-4 pt-4">
                                 <button
-                                    onClick={() => router.push('/ai-coach/goal')}
-                                    className="text-[11px] font-bold text-primary hover:underline"
+                                    onClick={() => {
+                                        setIsSaveModalOpen(true);
+                                        setIsSaveEditDrawerOpen(false);
+                                    }}
+                                    className="w-full py-4 bg-primary text-black font-black text-sm rounded-full shadow-[0_4px_15_rgba(204,216,83,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all"
                                 >
-                                    Edit
+                                    Save Plan
                                 </button>
                                 <button
-                                    onClick={() => setIsSaveModalOpen(true)}
-                                    className="text-[11px] font-bold text-primary hover:underline"
+                                    onClick={() => router.push('/ai-coach/goal')}
+                                    className="w-full py-2 text-primary font-bold text-sm hover:underline"
                                 >
-                                    Save
+                                    Edit Plan
                                 </button>
                             </div>
                         </div>
-                    )
-                }
+                    </div>
+                </div>
 
                 {/* Save Modal */}
                 {

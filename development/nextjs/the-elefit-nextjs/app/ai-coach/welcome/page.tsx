@@ -3,15 +3,25 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 import { BottomNav } from '@/components/BottomNav';
 import BottomNavNew from '@/components/BottomNavNew';
 import MobileNavDrawer from '@/components/MobileNavDrawer';
 
 export default function Welcome() {
     const router = useRouter();
+    const { isAuthenticated } = useAuth();
     const [activeDrawer, setActiveDrawer] = useState<'continue' | 'new' | null>(null);
 
     const closeDrawer = () => setActiveDrawer(null);
+
+    const handleAction = (action: () => void) => {
+        if (!isAuthenticated) {
+            router.push('/auth?redirect=/ai-coach/welcome');
+            return;
+        }
+        action();
+    };
 
     return (
         <div className="relative min-h-screen w-full bg-black overflow-hidden flex flex-col font-sans">
@@ -46,7 +56,7 @@ export default function Welcome() {
                     <div className="space-y-4">
                         {/* My Fitness Plan Card */}
                         <button
-                            onClick={() => setActiveDrawer('continue')}
+                            onClick={() => handleAction(() => setActiveDrawer('continue'))}
                             className="w-full text-left group relative overflow-hidden rounded-[24px] border border-[#2d2d2d] bg-black/40 backdrop-blur-xl p-6 transition-all active:scale-[0.98]"
                         >
                             <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -68,7 +78,7 @@ export default function Welcome() {
 
                         {/* Start New Plan Card */}
                         <button
-                            onClick={() => router.push('/ai-coach/goal')}
+                            onClick={() => handleAction(() => router.push('/ai-coach/goal'))}
                             className="w-full text-left group relative overflow-hidden rounded-[24px] border border-[#2d2d2d] bg-black/40 backdrop-blur-xl p-6 transition-all active:scale-[0.98]"
                         >
                             <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-lime-500/20 opacity-0 group-hover:opacity-100 transition-opacity" />
