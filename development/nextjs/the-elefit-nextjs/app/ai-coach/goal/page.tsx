@@ -83,7 +83,9 @@ export default function Goal() {
                                     placeholder="Lose 6 kg in 3 months"
                                     className="w-full bg-[#1A1A1A]/60 backdrop-blur-md border border-white/5 rounded-2xl p-5 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-primary/30 focus:ring-1 focus:ring-primary/30 transition-all font-medium"
                                 />
-                                <span className="absolute right-5 top-1/2 -translate-y-1/2 text-lg">🏋️</span>
+                                {!goal && (
+                                    <span className="absolute right-5 top-1/2 -translate-y-1/2 text-lg">🏋️</span>
+                                )}
                             </div>
 
                             <button

@@ -204,14 +204,26 @@ function ScheduleContent() {
                             <h1 className="text-xl md:text-3xl font-bold tracking-tight text-white">Weekly Schedule</h1>
                         </div>
 
-                        {/* Bookmark Button - Right End */}
-                        <button
-                            onClick={() => setIsSaveEditDrawerOpen(true)}
-                            className="absolute right-0 h-10 w-10 flex items-center justify-center rounded-full bg-white/5 text-white hover:bg-white/10 transition-all border border-white/10 active:scale-95 group"
-                            title="Save/Edit Plan"
-                        >
-                            <Bookmark className="h-5 w-5 group-hover:fill-primary group-hover:text-primary transition-colors" />
-                        </button>
+                        {/* Action Buttons - Right End */}
+                        <div className="absolute right-0 flex items-center gap-2">
+                            {/* Download Button (Mobile Only) */}
+                            <button
+                                onClick={() => generatePlanPDF({ headerData, parsedMeals, parsedWorkouts, scheduleDates })}
+                                className="md:hidden h-10 w-10 flex items-center justify-center rounded-full bg-white/5 text-white hover:bg-white/10 transition-all border border-white/10 active:scale-95 group"
+                                title="Download Plan"
+                            >
+                                <Download className="h-5 w-5 group-hover:translate-y-0.5 transition-transform" />
+                            </button>
+
+                            {/* Bookmark Button */}
+                            <button
+                                onClick={() => setIsSaveEditDrawerOpen(true)}
+                                className="h-10 w-10 flex items-center justify-center rounded-full bg-white/5 text-white hover:bg-white/10 transition-all border border-white/10 active:scale-95 group"
+                                title="Save/Edit Plan"
+                            >
+                                <Bookmark className="h-5 w-5 group-hover:fill-primary group-hover:text-primary transition-colors" />
+                            </button>
+                        </div>
                     </div>
                     {/* Date Selector Navigation */}
                     <div className="flex items-center justify-between md:justify-center gap-4 md:gap-8 mb-12">
@@ -266,7 +278,8 @@ function ScheduleContent() {
                         {/* Plan Header section in plan box */}
                         <div className="bg-[#1a1c14] border-b border-[#212121] px-6 md:px-8 py-6 flex items-center justify-between gap-6">
                             <div className="space-y-2">
-                                <h2 className="text-sm md:text-lg font-bold text-white tracking-tight">
+                                <h2 className="text-sm md:text-lg font-bold text-white tracking-tight flex items-baseline gap-2">
+                                    <span className="text-[#898989] font-black uppercase text-[10px] md:text-xs tracking-widest whitespace-nowrap">Goal:</span>
                                     {headerData.prompt}
                                 </h2>
                                 <div className="flex items-center gap-4">
@@ -283,9 +296,9 @@ function ScheduleContent() {
 
                             <button
                                 onClick={() => generatePlanPDF({ headerData, parsedMeals, parsedWorkouts, scheduleDates })}
-                                className="flex items-center justify-center h-10 w-10 md:w-auto md:h-auto md:bg-transparent md:border md:border-primary/30 text-primary font-bold text-xs uppercase tracking-widest md:px-6 md:py-2.5 rounded-xl hover:bg-primary/5 transition-all group"
+                                className="hidden md:flex items-center justify-center md:w-auto md:h-auto md:bg-transparent md:border md:border-primary/30 text-primary font-bold text-xs uppercase tracking-widest md:px-6 md:py-2.5 md:rounded-xl hover:bg-primary/5 transition-all group"
                             >
-                                <Download className="h-5 w-5 md:h-4 md:w-4 group-hover:translate-y-0.5 transition-transform" />
+                                <Download className="md:h-4 md:w-4 group-hover:translate-y-0.5 transition-transform" />
                                 <span className="hidden md:inline ml-2">Download Plan</span>
                             </button>
                         </div>
@@ -325,7 +338,7 @@ function ScheduleContent() {
                                 <>
                                     {/* Goal */}
                                     <div className="flex items-center justify-center gap-2">
-                                        <span className="text-xs font-bold uppercase tracking-widest text-[#454545]">Goal</span>
+                                        <span className="text-xs font-bold uppercase tracking-widest text-[#454545]">Daily Intake</span>
                                         <span className="h-px w-8 bg-[#212121]" />
                                         <span className="text-lg md:text-xl font-black text-primary">🔥 {headerData.calories} kcal</span>
                                     </div>
