@@ -460,16 +460,32 @@ export const authenticateCustomer = async (customerObject: { email: string; cust
 
     // 3. PERFORM ACTUAL LOGIN to Firebase Auth using the bridge password
     const bridgePassword = getBridgePassword(customerId);
-    const userCredential = await signInWithEmailAndPassword(auth, normalizedEmail, bridgePassword);
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, normalizedEmail, bridgePassword);
 
-    return {
-      success: true,
-      authenticated: true,
-      uid: userCredential.user.uid,
-      email: normalizedEmail,
-      shopifyCustomerId: customerId,
-      message: "Customer logged in automatically via bridge"
-    };
+      return {
+        success: true,
+        authenticated: true,
+        uid: userCredential.user.uid,
+        email: normalizedEmail,
+        shopifyCustomerId: customerId,
+        message: "Customer logged in automatically via bridge"
+      };
+    } catch (loginError: any) {
+      console.warn("Bridge login failed, falling back to verified session only:", loginError.message);
+      // Fallback: If login fails (user might have a manual password), we still return success 
+      // but let the UI know it's a "verified" session only.
+      // This matches the reference project's behavior.
+      return {
+        success: true,
+        authenticated: false, // Not signed into Firebase Auth, but verified via Shopify
+        verified: true,
+        uid: uid,
+        email: normalizedEmail,
+        shopifyCustomerId: customerId,
+        message: "Customer verified via Shopify (Manual sign-in may be required for some features)"
+      };
+    }
   } catch (error: any) {
     console.error("Authentication error:", error);
     throw error;

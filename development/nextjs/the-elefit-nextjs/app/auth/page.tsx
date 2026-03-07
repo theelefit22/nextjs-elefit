@@ -19,6 +19,7 @@ function AuthContent() {
     const [isLogin, setIsLogin] = useState(true);
     const [message, setMessage] = useState('');
     const [messageType, setMessageType] = useState<'success' | 'error' | ''>('');
+    const [isProcessing, setIsProcessing] = useState(false);
 
     // Check if user should be redirected
     useEffect(() => {
@@ -54,13 +55,24 @@ function AuthContent() {
         let email = searchParams.get('email');
         let customerId = searchParams.get('customerId');
 
+        if (!(token || (sessionTransfer === 'true' && email && customerId))) return;
+
+        // Prevent infinite loops if transfer was already attempted and failed in this session
+        const processed = sessionStorage.getItem('transfer_attempted');
+        if (processed === 'true' && !isAuthenticated) {
+            console.log('🔄 AuthPage: Session transfer already attempted and failed, showing form.');
+            return;
+        }
+
         const processTransfer = async (targetEmail: string, targetId: string) => {
             try {
+                setIsProcessing(true);
                 console.log('🔄 AuthPage: Processing session transfer for', targetEmail);
+
                 const { authenticateCustomer } = await import('@/shared/firebase');
                 const result = await authenticateCustomer({ email: targetEmail, customerId: targetId });
 
-                if (result.success && result.authenticated) {
+                if (result.success && (result.authenticated || result.verified)) {
                     setMessage('Welcome back! You have been automatically logged in.');
                     setMessageType('success');
 
@@ -73,10 +85,25 @@ function AuthContent() {
                         userType: 'customer'
                     };
                     localStorage.setItem('verifiedCustomerSession', JSON.stringify(verifiedSession));
+
+                    // Mark as attempted successfully
+                    sessionStorage.setItem('transfer_attempted', 'true');
+
+                    // Trigger context update
                     authenticate(verifiedSession);
+
+                    // Explicitly redirect after a short delay for UX
+                    setTimeout(() => {
+                        const redirectPath = searchParams.get('redirect') || '/ai-coach/welcome';
+                        router.replace(redirectPath);
+                    }, 1000);
                 }
             } catch (error) {
                 console.error('❌ AuthPage: Session transfer failed:', error);
+                setIsProcessing(false);
+                setMessage('Session transfer failed. Please sign in manually.');
+                setMessageType('error');
+                sessionStorage.setItem('transfer_attempted', 'true');
             }
         };
 
@@ -86,6 +113,9 @@ function AuthContent() {
                 const data = verifyShopifyToken(token);
                 if (data) {
                     processTransfer(data.email, data.customerId);
+                } else {
+                    console.error('❌ AuthPage: Invalid or expired token');
+                    sessionStorage.setItem('transfer_attempted', 'true');
                 }
             } else if (sessionTransfer === 'true' && email && customerId) {
                 processTransfer(email, customerId);
@@ -93,14 +123,20 @@ function AuthContent() {
         };
 
         handleToken();
-    }, [searchParams, authenticate]);
+    }, [searchParams, authenticate, router, isAuthenticated]);
 
-    if (authLoading) {
+    if (authLoading || isProcessing) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-black">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-                    <p className="text-white font-medium">Loading...</p>
+                    <div className="relative w-[160px] h-[60px] mx-auto mb-12">
+                        <Image src="/logo.png" alt="ELEFIT" fill className="object-contain brightness-0 invert" />
+                    </div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-6"></div>
+                    <p className="text-white font-medium text-lg">
+                        {isProcessing ? 'Verifying your Shopify session...' : 'Loading...'}
+                    </p>
+                    {isProcessing && <p className="text-[#666] text-sm mt-2">Almost there! Getting your AI Coach ready.</p>}
                 </div>
             </div>
         );
