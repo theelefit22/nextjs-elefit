@@ -70,6 +70,17 @@ let analytics: any;
 
 const isConfigValid = !!firebaseConfig.apiKey;
 
+// Secret salt for deriving bridge passwords from Shopify IDs
+const SHOPIFY_BRIDGE_SALT = "EleFit_Bridge_2026_Secure_";
+
+/**
+ * Derives a deterministic password from a Shopify Customer ID
+ */
+const getBridgePassword = (customerId: string) => {
+  // Simple but unique per user
+  return `${SHOPIFY_BRIDGE_SALT}${customerId}`;
+};
+
 if (isConfigValid) {
   if (!getApps().length) {
     app = initializeApp(firebaseConfig);
@@ -358,6 +369,82 @@ export const getUserProfile = async (uid: string) => {
     throw new Error(
       error instanceof Error ? error.message : "Failed to fetch user profile"
     );
+  }
+};
+
+/**
+ * Check if user exists by email
+ */
+export const checkUserExistsByEmail = async (email: string) => {
+  try {
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("email", "==", email.toLowerCase().trim()));
+    const querySnapshot = await getDocs(q);
+    return !querySnapshot.empty;
+  } catch (error) {
+    console.error("Error checking user existence:", error);
+    return false;
+  }
+};
+
+/**
+ * Authenticate customer from Shopify data (Session Transfer)
+ */
+export const authenticateCustomer = async (customerObject: { email: string; customerId: string }) => {
+  const { email, customerId } = customerObject;
+  const normalizedEmail = email.toLowerCase().trim();
+
+  try {
+    // 1. Verify customer exists in Shopify (using our shopify service)
+    const exists = await checkShopifyCustomerExists(normalizedEmail);
+    if (!exists) {
+      throw new Error("Customer not found in Shopify");
+    }
+
+    // 2. Check if user exists in Firebase/Firestore
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("email", "==", normalizedEmail));
+    const querySnapshot = await getDocs(q);
+
+    let uid = "";
+    let isNew = false;
+
+    if (!querySnapshot.empty) {
+      // Existing user
+      const userDoc = querySnapshot.docs[0];
+      uid = userDoc.id;
+
+      // Update customer ID if needed
+      if (userDoc.data().shopifyCustomerId !== customerId) {
+        await updateDoc(doc(db, "users", uid), {
+          shopifyCustomerId: customerId,
+          shopifyMapped: true,
+          updatedAt: new Date(),
+        });
+      }
+    } else {
+      // New user - Auto-create them using the bridge password
+      const bridgePassword = getBridgePassword(customerId);
+      const shopifyCustomer = { id: customerId, email: normalizedEmail };
+      const mappingResult = await mapShopifyUserToFirebase(normalizedEmail, bridgePassword, shopifyCustomer);
+      uid = mappingResult.uid;
+    }
+
+    // 3. PERFORM ACTUAL LOGIN to Firebase Auth using the bridge password
+    const bridgePassword = getBridgePassword(customerId);
+    const userCredential = await signInWithEmailAndPassword(auth, normalizedEmail, bridgePassword);
+
+    return {
+      success: true,
+      authenticated: true,
+      uid: userCredential.user.uid,
+      email: normalizedEmail,
+      shopifyCustomerId: customerId,
+      message: "Customer logged in automatically via bridge"
+    };
+  } catch (error: any) {
+    console.error("Authentication error:", error);
+    throw error;
   }
 };
 

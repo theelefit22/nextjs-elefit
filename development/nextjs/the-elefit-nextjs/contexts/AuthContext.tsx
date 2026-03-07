@@ -7,6 +7,7 @@ import {
   logoutUser,
   getUserProfile,
   getUserType,
+  authenticateCustomer
 } from "@/shared/firebase";
 
 export interface AuthUser extends User {
@@ -30,6 +31,7 @@ export interface AuthContextType {
   logout: () => Promise<void>;
   userType: "customer" | "expert" | "admin" | null;
   isAuthenticated: boolean;
+  authenticate: (sessionData: any) => void;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(
@@ -50,8 +52,48 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Subscribe to auth state changes
   React.useEffect(() => {
+    // 1. Check for verified customer session first (for automatic login from theelefit.com)
+    const checkVerifiedSession = async () => {
+      if (typeof window !== 'undefined') {
+        const verifiedSession = localStorage.getItem('verifiedCustomerSession');
+        if (verifiedSession) {
+          try {
+            const sessionData = JSON.parse(verifiedSession);
+            const sessionAge = Date.now() - sessionData.timestamp;
+            const maxAge = 30 * 60 * 1000; // 30 minutes
+
+            if (sessionAge < maxAge && sessionData.verified) {
+              console.log('🔐 AuthProvider: Valid verified session found, setting local state');
+              // Create a mock user object to satisfy the context
+              const mockUser = {
+                uid: sessionData.uid,
+                email: sessionData.email,
+                userType: sessionData.userType || 'customer',
+                shopifyCustomerId: sessionData.customerId,
+                shopifyMapped: true,
+              } as AuthUser;
+
+              setUser(mockUser);
+              setUserType(mockUser.userType as any);
+              setLoading(false);
+              return true;
+            } else {
+              localStorage.removeItem('verifiedCustomerSession');
+            }
+          } catch (e) {
+            console.error('Error parsing verified session:', e);
+            localStorage.removeItem('verifiedCustomerSession');
+          }
+        }
+      }
+      return false;
+    };
+
     const unsubscribe = subscribeToAuthStateChanges(async (firebaseUser) => {
       try {
+        const hasVerifiedSession = await checkVerifiedSession();
+        if (hasVerifiedSession) return; // If we have a verified session, let it take precedence
+
         if (firebaseUser) {
           // Fetch user type from profile
           const profile = await getUserProfile(firebaseUser.uid);
@@ -80,6 +122,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     return () => unsubscribe();
   }, []);
+
+  const authenticate = (sessionData: any) => {
+    const mockUser = {
+      uid: sessionData.uid,
+      email: sessionData.email,
+      userType: sessionData.userType || 'customer',
+      shopifyCustomerId: sessionData.customerId,
+      shopifyMapped: true,
+    } as AuthUser;
+
+    setUser(mockUser);
+    setUserType(mockUser.userType as any);
+  };
 
   const login = async (email: string, password: string) => {
     try {
@@ -169,6 +224,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         logout,
         userType,
         isAuthenticated: !!user,
+        authenticate,
       }}
     >
       {children}

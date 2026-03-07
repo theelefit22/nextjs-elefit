@@ -13,7 +13,7 @@ import Image from 'next/image';
 function AuthContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { isAuthenticated, loading: authLoading, userType } = useAuth();
+    const { isAuthenticated, loading: authLoading, userType, authenticate } = useAuth();
 
     // Page state
     const [isLogin, setIsLogin] = useState(true);
@@ -33,6 +33,7 @@ function AuthContent() {
         }
     }, [isAuthenticated, authLoading, userType, router, searchParams]);
 
+    // Handle URL parameters for messages and signup toggle
     useEffect(() => {
         const msg = searchParams.get('message');
         const urlMessage = searchParams.get('error') ? 'error' : 'success';
@@ -45,6 +46,47 @@ function AuthContent() {
             setIsLogin(false);
         }
     }, [searchParams]);
+
+    // Handle session transfer from theelefit.com
+    useEffect(() => {
+        const sessionTransfer = searchParams.get('sessionTransfer');
+        const email = searchParams.get('email');
+        const customerId = searchParams.get('customerId');
+
+        if (sessionTransfer === 'true' && email && customerId) {
+            const processTransfer = async () => {
+                try {
+                    console.log('🔄 AuthPage: Processing session transfer for', email);
+                    const { authenticateCustomer } = await import('@/shared/firebase');
+                    const result = await authenticateCustomer({ email, customerId });
+
+                    if (result.success && result.authenticated) {
+                        // result.authenticated is now true because firebase.ts handles the login
+                        setMessage('Welcome back! You have been automatically logged in.');
+                        setMessageType('success');
+
+                        // We still set this for the AuthProvider's initial check on page refreshes
+                        const verifiedSession = {
+                            email: result.email,
+                            uid: result.uid,
+                            customerId: result.shopifyCustomerId,
+                            verified: true,
+                            timestamp: Date.now(),
+                            userType: 'customer'
+                        };
+                        localStorage.setItem('verifiedCustomerSession', JSON.stringify(verifiedSession));
+
+                        // speed up the local transition
+                        authenticate(verifiedSession);
+                    }
+                } catch (error) {
+                    console.error('❌ AuthPage: Session transfer failed:', error);
+                }
+            };
+
+            processTransfer();
+        }
+    }, [searchParams, authenticate]);
 
     if (authLoading) {
         return (
