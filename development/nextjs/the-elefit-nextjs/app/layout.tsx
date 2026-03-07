@@ -9,6 +9,9 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "EleFit - Your Personal AI Fitness Coach",
   description: "Transform your fitness journey with personalized AI coaching, expert advice, and a supportive community.",
+  icons: {
+    icon: "/logo.png",
+  },
 };
 
 export default function RootLayout({
