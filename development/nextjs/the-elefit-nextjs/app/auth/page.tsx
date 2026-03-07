@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import Login from '@/components/auth/Login';
@@ -49,6 +49,8 @@ function AuthContent() {
     }, [searchParams]);
 
     // Handle session transfer from theelefit.com
+    const transferStarted = useRef(false);
+
     useEffect(() => {
         const sessionTransfer = searchParams.get('sessionTransfer');
         const token = searchParams.get('token');
@@ -56,15 +58,11 @@ function AuthContent() {
         let customerId = searchParams.get('customerId');
 
         if (!(token || (sessionTransfer === 'true' && email && customerId))) return;
-
-        // Prevent infinite loops if transfer was already attempted and failed in this session
-        const processed = sessionStorage.getItem('transfer_attempted');
-        if (processed === 'true' && !isAuthenticated) {
-            console.log('🔄 AuthPage: Session transfer already attempted and failed, showing form.');
-            return;
-        }
+        if (transferStarted.current || isAuthenticated) return;
 
         const processTransfer = async (targetEmail: string, targetId: string) => {
+            if (transferStarted.current) return;
+            transferStarted.current = true;
             try {
                 setIsProcessing(true);
                 console.log('🔄 AuthPage: Processing session transfer for', targetEmail);
@@ -97,13 +95,14 @@ function AuthContent() {
                         const redirectPath = searchParams.get('redirect') || '/ai-coach/welcome';
                         router.replace(redirectPath);
                     }, 1000);
+                } else {
+                    throw new Error(result.message || 'Authentication failed');
                 }
-            } catch (error) {
+            } catch (error: any) {
                 console.error('❌ AuthPage: Session transfer failed:', error);
                 setIsProcessing(false);
-                setMessage('Session transfer failed. Please sign in manually.');
+                setMessage(error.message || 'Session transfer failed. Please sign in manually.');
                 setMessageType('error');
-                sessionStorage.setItem('transfer_attempted', 'true');
             }
         };
 
@@ -115,7 +114,9 @@ function AuthContent() {
                     processTransfer(data.email, data.customerId);
                 } else {
                     console.error('❌ AuthPage: Invalid or expired token');
-                    sessionStorage.setItem('transfer_attempted', 'true');
+                    setMessage('Invalid or expired transfer token. Please sign in manually.');
+                    setMessageType('error');
+                    transferStarted.current = true;
                 }
             } else if (sessionTransfer === 'true' && email && customerId) {
                 processTransfer(email, customerId);

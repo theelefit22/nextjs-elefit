@@ -41,7 +41,7 @@ import {
   deleteObject,
   FirebaseStorage,
 } from "firebase/storage";
-import { getAnalytics, Analytics } from "firebase/analytics";
+import { getAnalytics, Analytics, isSupported } from "firebase/analytics";
 import { getDatabase, Database, ref as dbRef, set, get } from "firebase/database";
 import {
   loginShopifyCustomer,
@@ -117,8 +117,12 @@ if (isConfigValid) {
     storage = getStorage(app);
     database = getDatabase(app);
 
-    if (typeof window !== "undefined" && process.env.NODE_ENV === "production") {
-      analytics = getAnalytics(app);
+    if (typeof window !== "undefined") {
+      isSupported().then((supported) => {
+        if (supported && process.env.NODE_ENV === "production") {
+          analytics = getAnalytics(app);
+        }
+      });
     }
   } else {
     app = getApps()[0];
