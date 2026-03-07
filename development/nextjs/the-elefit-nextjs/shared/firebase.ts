@@ -43,6 +43,11 @@ import {
 } from "firebase/storage";
 import { getAnalytics, Analytics } from "firebase/analytics";
 import { getDatabase, Database, ref as dbRef, set, get } from "firebase/database";
+import {
+  loginShopifyCustomer,
+  getCustomerByToken,
+  checkShopifyCustomerExists
+} from "@/lib/shopify";
 
 // Firebase configuration from environment variables
 const firebaseConfig = {
@@ -94,6 +99,7 @@ if (isConfigValid) {
 
 /**
  * Sign up user with email and password
+ * Integrated with Shopify creation/mapping
  */
 export const signupUser = async (
   email: string,
@@ -102,21 +108,52 @@ export const signupUser = async (
   firstName: string,
   lastName: string
 ) => {
+  const normalizedEmail = email.toLowerCase().trim();
+
   try {
+    // 1. Check if user already exists in Shopify
+    const shopifyExists = await checkShopifyCustomerExists(normalizedEmail);
+    let shopifyId = null;
+
+    if (shopifyExists) {
+      console.log("User already exists in Shopify, attempting to link...");
+      try {
+        // Try to login to Shopify to verify ownership/password
+        const accessToken = await loginShopifyCustomer(normalizedEmail, password);
+        const customer = await getCustomerByToken(accessToken);
+        shopifyId = customer.id;
+        console.log("Existing Shopify user verified.");
+      } catch (shopifyError: any) {
+        console.error("Shopify login failed during signup:", shopifyError.message);
+        // If password doesn't match Shopify, we shouldn't allow signup with this email
+        // or we should warn them. For now, let's be strict.
+        throw new Error("An account with this email already exists in Shopify, but the password provided is incorrect.");
+      }
+    } else {
+      // 2. Ideally create in Shopify here if needed. 
+      // For simplicity and to match the reference, we assume they usually exist or we map them.
+      // If we want to ACTIVE create them in Shopify, we would call a shopifyCustomerCreate mutation.
+      // The reference project had a createShopifyCustomer function.
+      console.log("User does not exist in Shopify.");
+    }
+
+    // 3. Create user in Firebase Auth
     const userCredential = await createUserWithEmailAndPassword(
       auth,
-      email,
+      normalizedEmail,
       password
     );
     const user = userCredential.user;
 
-    // Create user profile in Firestore
+    // 4. Create user profile in Firestore
     await setDoc(doc(db, "users", user.uid), {
-      email,
+      email: normalizedEmail,
       uid: user.uid,
       userType,
       firstName,
       lastName,
+      shopifyCustomerId: shopifyId,
+      shopifyMapped: !!shopifyId,
       createdAt: new Date(),
       profileImageUrl: null,
       phoneVerified: false,
@@ -124,7 +161,8 @@ export const signupUser = async (
     });
 
     return user;
-  } catch (error) {
+  } catch (error: any) {
+    console.error("Signup error:", error);
     throw new Error(
       error instanceof Error ? error.message : "Signup failed"
     );
@@ -133,15 +171,97 @@ export const signupUser = async (
 
 /**
  * Login user with email and password
+ * Integrated with Shopify fallback
  */
 export const loginUser = async (email: string, password: string) => {
+  const normalizedEmail = email.toLowerCase().trim();
+
   try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    // 1. Try direct Firebase login
+    const userCredential = await signInWithEmailAndPassword(auth, normalizedEmail, password);
     return userCredential.user;
-  } catch (error) {
-    throw new Error(
-      error instanceof Error ? error.message : "Login failed"
-    );
+  } catch (firebaseError: any) {
+    console.warn("Firebase login failed, trying Shopify...");
+
+    // 2. If Firebase fails, try Shopify
+    try {
+      const accessToken = await loginShopifyCustomer(normalizedEmail, password);
+      const shopifyCustomer = await getCustomerByToken(accessToken);
+
+      console.log("Shopify login successful for:", normalizedEmail);
+
+      // 3. Map Shopify user to Firebase
+      const mappingResult = await mapShopifyUserToFirebase(normalizedEmail, password, shopifyCustomer);
+
+      // If auto-created, we still need to log them in properly to Firebase
+      // But the mappingResult already gives us what we need for the session
+      // In a real app, you might want to sign in with a custom token or just use the UID
+
+      // For now, let's try to sign in with the password we just verified with Shopify
+      const userCredential = await signInWithEmailAndPassword(auth, normalizedEmail, password);
+      return userCredential.user;
+
+    } catch (shopifyError: any) {
+      console.error("Shopify login also failed:", shopifyError.message);
+
+      // If both fail, throw the original Firebase error or a more descriptive one
+      if (shopifyError.message === 'Email or password is incorrect') {
+        throw new Error("Invalid email or password. If you have a Shopify account, please use your Shopify password.");
+      }
+      throw firebaseError;
+    }
+  }
+};
+
+/**
+ * Map Shopify customer to Firebase (Auto-create if not exists)
+ */
+export const mapShopifyUserToFirebase = async (
+  email: string,
+  password: string,
+  shopifyCustomer: any
+) => {
+  const normalizedEmail = email.toLowerCase().trim();
+
+  try {
+    // Check if user exists in Firestore
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("email", "==", normalizedEmail));
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      // Existing user: Update with Shopify info if missing
+      const userDoc = querySnapshot.docs[0];
+      await updateDoc(doc(db, "users", userDoc.id), {
+        shopifyCustomerId: shopifyCustomer.id,
+        shopifyMapped: true,
+        updatedAt: new Date(),
+      });
+      console.log("Updated existing user with Shopify ID");
+      return { uid: userDoc.id, isNew: false };
+    } else {
+      // New user: Create in Firebase Auth and Firestore
+      console.log("Auto-creating Firebase user for Shopify customer");
+      const userCredential = await createUserWithEmailAndPassword(auth, normalizedEmail, password);
+      const user = userCredential.user;
+
+      await setDoc(doc(db, "users", user.uid), {
+        email: normalizedEmail,
+        uid: user.uid,
+        userType: "customer",
+        firstName: shopifyCustomer.firstName || "",
+        lastName: shopifyCustomer.lastName || "",
+        shopifyCustomerId: shopifyCustomer.id,
+        shopifyMapped: true,
+        createdAt: new Date(),
+        profileImageUrl: null,
+      });
+
+      return { uid: user.uid, isNew: true };
+    }
+  } catch (error: any) {
+    console.error("Error mapping Shopify user:", error);
+    throw error;
   }
 };
 

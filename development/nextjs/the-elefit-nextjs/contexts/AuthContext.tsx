@@ -11,6 +11,8 @@ import {
 
 export interface AuthUser extends User {
   userType?: "customer" | "expert" | "admin" | null;
+  shopifyMapped?: boolean;
+  shopifyCustomerId?: string | null;
 }
 
 export interface AuthContextType {
@@ -58,6 +60,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           setUser({
             ...firebaseUser,
             userType: type,
+            shopifyMapped: profile?.shopifyMapped || false,
+            shopifyCustomerId: profile?.shopifyCustomerId || null,
           } as AuthUser);
           setUserType(type);
         } else {
@@ -90,6 +94,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser({
         ...firebaseUser,
         userType: type,
+        shopifyMapped: profile?.shopifyMapped || false,
+        shopifyCustomerId: profile?.shopifyCustomerId || null,
       } as AuthUser);
       setUserType(type);
     } catch (err) {
