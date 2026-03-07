@@ -423,13 +423,7 @@ export const authenticateCustomer = async (customerObject: { email: string; cust
   const normalizedEmail = email.toLowerCase().trim();
 
   try {
-    // 1. Verify customer exists in Shopify (using our shopify service)
-    const exists = await checkShopifyCustomerExists(normalizedEmail);
-    if (!exists) {
-      throw new Error("Customer not found in Shopify");
-    }
-
-    // 2. Check if user exists in Firebase/Firestore
+    // 1. Check if user exists in Firebase/Firestore
     const usersRef = collection(db, "users");
     const q = query(usersRef, where("email", "==", normalizedEmail));
     const querySnapshot = await getDocs(q);
