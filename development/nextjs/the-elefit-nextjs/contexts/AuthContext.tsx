@@ -134,6 +134,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     setUser(mockUser);
     setUserType(mockUser.userType as any);
+    setLoading(false);
   };
 
   const login = async (email: string, password: string) => {
