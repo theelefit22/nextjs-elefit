@@ -167,17 +167,11 @@ export const signupUser = async (
         shopifyId = customer.id;
         console.log("Existing Shopify user verified.");
       } catch (shopifyError: any) {
-        console.error("Shopify login failed during signup:", shopifyError.message);
-        // If password doesn't match Shopify, we shouldn't allow signup with this email
-        // or we should warn them. For now, let's be strict.
-        throw new Error("An account with this email already exists in Shopify, but the password provided is incorrect.");
+        console.warn("Shopify check failed during signup. Proceeding with Firebase registration only:", shopifyError.message);
+        // We do NOT throw here anymore to prevent blocking registration
       }
     } else {
-      // 2. Ideally create in Shopify here if needed. 
-      // For simplicity and to match the reference, we assume they usually exist or we map them.
-      // If we want to ACTIVE create them in Shopify, we would call a shopifyCustomerCreate mutation.
-      // The reference project had a createShopifyCustomer function.
-      console.log("User does not exist in Shopify.");
+      console.log("User does not exist in Shopify. Proceeding with Firebase-only registration.");
     }
 
     // 3. Create user in Firebase Auth

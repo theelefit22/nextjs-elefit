@@ -122,7 +122,7 @@ export default function Signup({ onSwitchToLogin }: SignupProps) {
             } else if (message.includes('network') || message.includes('Network')) {
                 setError('Network error. Please check your internet connection and try again.');
             } else {
-                setError('Account creation failed. Please try again.');
+                setError(message || 'Account creation failed. Please try again.');
             }
         } finally {
             setLoading(false);
