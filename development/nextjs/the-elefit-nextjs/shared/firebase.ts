@@ -16,6 +16,7 @@ import {
   signInWithPhoneNumber,
   AuthProvider,
   confirmPasswordReset,
+  sendEmailVerification,
 } from "firebase/auth";
 import {
   getFirestore,
@@ -32,6 +33,7 @@ import {
   DocumentData,
   QueryConstraint,
   writeBatch,
+  increment,
 } from "firebase/firestore";
 import {
   getStorage,
@@ -182,7 +184,15 @@ export const signupUser = async (
     );
     const user = userCredential.user;
 
-    // 4. Create user profile in Firestore
+    // 4. Send email verification
+    try {
+      await sendEmailVerification(user);
+      console.log("Verification email sent to:", normalizedEmail);
+    } catch (emailError) {
+      console.error("Failed to send verification email:", emailError);
+    }
+
+    // 5. Create user profile in Firestore with initial credits
     await setDoc(doc(db, "users", user.uid), {
       email: normalizedEmail,
       uid: user.uid,
@@ -192,6 +202,7 @@ export const signupUser = async (
       shopifyCustomerId: shopifyId,
       shopifyMapped: !!shopifyId,
       createdAt: new Date(),
+      credits: 10, // Initialize with 10 credits
       profileImageUrl: null,
       phoneVerified: false,
       phone: null,
@@ -204,6 +215,44 @@ export const signupUser = async (
       error instanceof Error ? error.message : "Signup failed"
     );
   }
+};
+
+/**
+ * Get user credits
+ */
+export const getUserCredits = async (uid: string): Promise<number> => {
+  try {
+    const profile = await getUserProfile(uid);
+    return profile?.credits || 0;
+  } catch (error) {
+    console.error("Error fetching credits:", error);
+    return 0;
+  }
+};
+
+/**
+ * Decrement user credits by 1
+ */
+export const decrementCredits = async (uid: string) => {
+  try {
+    const userRef = doc(db, "users", uid);
+    await updateDoc(userRef, {
+      credits: increment(-1),
+      updatedAt: new Date(),
+    });
+  } catch (error) {
+    console.error("Error decrementing credits:", error);
+    throw new Error("Failed to deduct credit");
+  }
+};
+
+/**
+ * Send verification email to currently logged in user
+ */
+export const sendVerificationEmail = async () => {
+  const user = auth.currentUser;
+  if (!user) throw new Error("No authenticated user");
+  await sendEmailVerification(user);
 };
 
 /**

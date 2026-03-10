@@ -5,10 +5,13 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import BottomNavNew from '@/components/BottomNavNew';
 import { useAiCoach } from '@/contexts/AiCoachContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { decrementCredits } from '@/shared/firebase';
 
 export default function Calories() {
     const router = useRouter();
     const { data, updateData } = useAiCoach();
+    const { user } = useAuth();
     const [mounted, setMounted] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -112,8 +115,27 @@ export default function Calories() {
 
     const handleContinue = async () => {
         try {
+            if (!user) {
+                setError("Please log in to generate a plan.");
+                return;
+            }
+
+            if (!user.emailVerified) {
+                setError("Please verify your email before generating a plan. Check your inbox!");
+                return;
+            }
+
+            if ((user.credits || 0) <= 0) {
+                setError("You have 0 credits remaining. Please contact support or upgrade to generate more plans.");
+                return;
+            }
+
             setLoading(true);
             setError(null);
+
+            // Deduct credit
+            await decrementCredits(user.uid);
+
             updateData({ mealPlan: null, workoutPlan: null });
 
             let mealText = '';

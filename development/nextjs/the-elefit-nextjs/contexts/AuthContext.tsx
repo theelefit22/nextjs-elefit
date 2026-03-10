@@ -14,6 +14,7 @@ export interface AuthUser extends User {
   userType?: "customer" | "expert" | "admin" | null;
   shopifyMapped?: boolean;
   shopifyCustomerId?: string | null;
+  credits?: number;
 }
 
 export interface AuthContextType {
@@ -71,6 +72,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 userType: sessionData.userType || 'customer',
                 shopifyCustomerId: sessionData.customerId,
                 shopifyMapped: true,
+                credits: sessionData.credits || 0,
               } as AuthUser;
 
               setUser(mockUser);
@@ -104,6 +106,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             userType: type,
             shopifyMapped: profile?.shopifyMapped || false,
             shopifyCustomerId: profile?.shopifyCustomerId || null,
+            credits: profile?.credits || 0,
           } as AuthUser);
           setUserType(type);
         } else {
@@ -130,6 +133,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       userType: sessionData.userType || 'customer',
       shopifyCustomerId: sessionData.customerId,
       shopifyMapped: true,
+      credits: sessionData.credits || 0,
     } as AuthUser;
 
     setUser(mockUser);
@@ -152,6 +156,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         userType: type,
         shopifyMapped: profile?.shopifyMapped || false,
         shopifyCustomerId: profile?.shopifyCustomerId || null,
+        credits: profile?.credits || 0,
       } as AuthUser);
       setUserType(type);
     } catch (err) {
@@ -185,6 +190,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser({
         ...firebaseUser,
         userType: userTypeValue,
+        credits: 10, // Default for new users
       } as AuthUser);
       setUserType(userTypeValue);
     } catch (err) {

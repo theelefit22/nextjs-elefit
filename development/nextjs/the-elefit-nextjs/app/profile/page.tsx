@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { getUserProfile, updateUserProfile, getUserPlans } from '@/shared/firebase';
-import { User, ChevronDown, Download, LogOut, ChevronLeft } from 'lucide-react';
+import { getUserProfile, updateUserProfile, getUserPlans, sendVerificationEmail } from '@/shared/firebase';
+import { User, ChevronDown, Download, LogOut, ChevronLeft, ShieldCheck, Mail, Send } from 'lucide-react';
 import ProfileImageUploader from '@/components/ProfileImageUploader';
 import BottomNavNew from '@/components/BottomNavNew';
 import { Button } from '@/components/ui/button';
@@ -227,6 +227,34 @@ function ProfileContent() {
             </div>
 
             <main className="max-w-7xl mx-auto px-4 py-12 pb-40">
+                {/* Email Verification Alert */}
+                {currentUser && !currentUser.emailVerified && (
+                    <div className="mb-8 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4">
+                        <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 flex items-center justify-center bg-red-500/20 rounded-full">
+                                <Mail className="w-5 h-5 text-red-500" />
+                            </div>
+                            <div>
+                                <h4 className="text-sm font-bold text-white tracking-tight">Email not verified</h4>
+                                <p className="text-xs text-white/40">Please verify your email to unlock AI plan generation.</p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={async () => {
+                                try {
+                                    await sendVerificationEmail();
+                                    setMessage({ text: 'Verification email sent!', type: 'success' });
+                                } catch (e: any) {
+                                    setMessage({ text: e.message, type: 'error' });
+                                }
+                            }}
+                            className="flex items-center gap-2 px-6 py-2 bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-white hover:bg-white/10 transition-all uppercase tracking-widest whitespace-nowrap"
+                        >
+                            <Send className="w-3 h-3" /> Resend Email
+                        </button>
+                    </div>
+                )}
+
                 <div className="bg-[#0c0c0c] border border-[#212121] rounded-3xl overflow-hidden shadow-2xl">
                     {/* Hero Section */}
                     <div className="flex flex-col items-center pt-10 pb-8 px-8">
@@ -246,7 +274,13 @@ function ProfileContent() {
                         <p className="text-[#828282] text-sm mt-0.5">{userData.email}</p>
 
                         {/* Stats Widgets */}
-                        <div className="grid grid-cols-3 gap-3 w-full max-w-xl mt-8">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 w-full max-w-2xl mt-8">
+                            {/* Credits Badge */}
+                            <div className="bg-primary/10 border border-primary/20 rounded-xl flex flex-col items-center justify-center py-4 px-2 shadow-[0_0_15px_rgba(204,216,83,0.1)]">
+                                <ShieldCheck className="w-4 h-4 text-primary mb-1" />
+                                <span className="text-lg font-black text-primary">{currentUser?.credits || 0}</span>
+                                <span className="text-[10px] text-primary/60 font-black uppercase tracking-widest">AI Credits</span>
+                            </div>
                             {statsData.map((stat, idx) => (
                                 <div key={idx} className="bg-[#0D0D0D] border border-[#212121] rounded-xl flex flex-col items-center justify-center py-4 px-2">
                                     <span className="text-lg font-bold">{stat.value}</span>
