@@ -1,13 +1,16 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Eye, EyeOff, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle, CheckCircle2, ArrowLeft } from 'lucide-react';
+import OTPVerification from './OTPVerification';
+import { generateOTP, saveSignupOTP } from '@/shared/firebase';
+import { sendSignupOTP } from '@/shared/emailService';
 
 interface SignupProps {
     onSwitchToLogin?: () => void;
@@ -15,7 +18,7 @@ interface SignupProps {
 
 export default function Signup({ onSwitchToLogin }: SignupProps) {
     const router = useRouter();
-    const { signup, error: authError } = useAuth();
+    const { user, signup, error: authError, refreshProfile } = useAuth();
 
     // Form state
     const [firstName, setFirstName] = useState('');
@@ -28,6 +31,16 @@ export default function Signup({ onSwitchToLogin }: SignupProps) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [signupStep, setSignupStep] = useState<'form' | 'otp'>('form');
+
+    // Sync step with auth state and handle redirects
+    useEffect(() => {
+        if (user && !user.otpVerified && !user.emailVerified) {
+            setSignupStep('otp');
+        } else if (!user) {
+            setSignupStep('form');
+        }
+    }, [user]);
 
     // Validate email format
     const isValidEmail = (value: string): boolean => {
@@ -96,18 +109,21 @@ export default function Signup({ onSwitchToLogin }: SignupProps) {
 
         try {
             // Fixed signature to match AuthContext
-            await signup(email, password, 'customer', firstName, lastName);
+            const user = await signup(email, password, 'customer', firstName, lastName);
 
-            setSuccess('Account created successfully! Redirecting...');
-            setFirstName('');
-            setLastName('');
-            setEmail('');
-            setPassword('');
-            setConfirmPassword('');
+            if (user) {
+                // 1. Generate OTP
+                const code = generateOTP();
 
-            setTimeout(() => {
-                router.push('/profile');
-            }, 2000);
+                // 2. Save OTP to Firestore
+                await saveSignupOTP(user.uid, email, code);
+
+                // 3. Send OTP via EmailJS
+                await sendSignupOTP(email, code);
+
+                setSignupStep('otp');
+                setSuccess('Verification code sent to your email!');
+            }
         } catch (err: any) {
             const code = err.code || '';
             const message = err.message || '';
@@ -129,7 +145,7 @@ export default function Signup({ onSwitchToLogin }: SignupProps) {
         }
     };
 
-    return (
+    const signupForm = (
         <div className="w-full">
             <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Header */}
@@ -281,4 +297,36 @@ export default function Signup({ onSwitchToLogin }: SignupProps) {
             </form>
         </div>
     );
+
+    if (signupStep === 'otp') {
+        // Use either newUserInfo or the authenticated user from context
+        const displayEmail = user?.email || email;
+        const displayUid = user?.uid;
+
+        if (!displayUid || !displayEmail) {
+            return signupForm; // Fallback if we somehow lost user info
+        }
+
+        return (
+            <div className="w-full">
+                <button
+                    onClick={() => setSignupStep('form')}
+                    className="flex items-center gap-2 text-xs text-[#666] hover:text-white mb-8 transition-colors"
+                >
+                    <ArrowLeft className="w-3 h-3" /> Back to Signup
+                </button>
+                <OTPVerification
+                    email={displayEmail}
+                    uid={displayUid}
+                    onVerified={async () => {
+                        await refreshProfile();
+                        setSuccess('Email verified! Welcome to EleFit.');
+                        setTimeout(() => router.push('/profile'), 1500);
+                    }}
+                />
+            </div>
+        );
+    }
+
+    return signupForm;
 }

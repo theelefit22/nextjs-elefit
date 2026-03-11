@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -11,12 +11,20 @@ import { Eye, EyeOff, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 interface LoginProps {
     onSwitchToSignup?: () => void;
+    onUnverified?: (email: string, uid: string) => void;
 }
 
-export default function Login({ onSwitchToSignup }: LoginProps) {
+export default function Login({ onSwitchToSignup, onUnverified }: LoginProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { login, error: authError } = useAuth();
+    const { user, login, error: authError } = useAuth();
+
+    // Sync state if already logged in but not verified
+    useEffect(() => {
+        if (user && !user.otpVerified && !user.emailVerified && onUnverified) {
+            onUnverified(user.email || '', user.uid);
+        }
+    }, [user, onUnverified]);
 
     // Form state
     const [email, setEmail] = useState(() => searchParams.get('email') || '');
@@ -60,6 +68,11 @@ export default function Login({ onSwitchToSignup }: LoginProps) {
         try {
             await login(email, password);
             setSuccess('Login successful! Redirecting...');
+
+            if (user && !user.otpVerified && !user.emailVerified && onUnverified) {
+                onUnverified(email, user.uid);
+                return;
+            }
 
             // Redirect based on user type or search params
             const redirectPath = searchParams.get('redirect') || '/';

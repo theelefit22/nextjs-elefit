@@ -13,7 +13,7 @@ import Image from 'next/image';
 function AuthContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { isAuthenticated, loading: authLoading, userType, authenticate } = useAuth();
+    const { user, isAuthenticated, loading: authLoading, userType, authenticate } = useAuth();
 
     // Page state
     const [isLogin, setIsLogin] = useState(true);
@@ -24,6 +24,12 @@ function AuthContent() {
     // Check if user should be redirected
     useEffect(() => {
         if (!authLoading && isAuthenticated && userType) {
+            // Prevent redirect if OTP verification is pending
+            if (user && !user.otpVerified && !user.emailVerified) {
+                console.log("🚦 AuthPage: Holding redirect - OTP verification required");
+                return;
+            }
+
             const redirectPath = searchParams.get('redirect');
             if (redirectPath) {
                 router.replace(redirectPath);
@@ -193,7 +199,14 @@ function AuthContent() {
                     {/* Auth Forms */}
                     <div className="w-full animate-in fade-in slide-in-from-right-4 duration-500">
                         {isLogin ? (
-                            <Login onSwitchToSignup={() => setIsLogin(false)} />
+                            <Login
+                                onSwitchToSignup={() => setIsLogin(false)}
+                                onUnverified={() => {
+                                    setIsLogin(false);
+                                    setMessageType('success');
+                                    setMessage('Please verify your email to continue.');
+                                }}
+                            />
                         ) : (
                             <Signup onSwitchToLogin={() => setIsLogin(true)} />
                         )}

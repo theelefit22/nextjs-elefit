@@ -228,7 +228,7 @@ function ProfileContent() {
 
             <main className="max-w-7xl mx-auto px-4 py-12 pb-40">
                 {/* Email Verification Alert */}
-                {currentUser && !currentUser.emailVerified && (
+                {currentUser && !currentUser.emailVerified && !currentUser.otpVerified && (
                     <div className="mb-8 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4">
                         <div className="flex items-center gap-3">
                             <div className="h-10 w-10 flex items-center justify-center bg-red-500/20 rounded-full">

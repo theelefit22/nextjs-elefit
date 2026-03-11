@@ -34,6 +34,8 @@ import {
   QueryConstraint,
   writeBatch,
   increment,
+  serverTimestamp,
+  Timestamp,
 } from "firebase/firestore";
 import {
   getStorage,
@@ -184,15 +186,16 @@ export const signupUser = async (
     );
     const user = userCredential.user;
 
-    // 4. Send email verification
+    // 4. Send email verification (LEGACY - Disabled for OTP)
+    /*
     try {
       await sendEmailVerification(user);
-      console.log("Verification email sent to:", normalizedEmail);
     } catch (emailError) {
       console.error("Failed to send verification email:", emailError);
     }
+    */
 
-    // 5. Create user profile in Firestore with initial credits
+    // 5. Create user profile in Firestore
     await setDoc(doc(db, "users", user.uid), {
       email: normalizedEmail,
       uid: user.uid,
@@ -202,7 +205,8 @@ export const signupUser = async (
       shopifyCustomerId: shopifyId,
       shopifyMapped: !!shopifyId,
       createdAt: new Date(),
-      credits: 10, // Initialize with 10 credits
+      credits: 0, // Initialize with 0, will set to 10 after OTP verification
+      otpVerified: false,
       profileImageUrl: null,
       phoneVerified: false,
       phone: null,
@@ -253,6 +257,72 @@ export const sendVerificationEmail = async () => {
   const user = auth.currentUser;
   if (!user) throw new Error("No authenticated user");
   await sendEmailVerification(user);
+};
+
+/**
+ * Generate a 6-digit OTP
+ */
+export const generateOTP = (): string => {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+};
+
+/**
+ * Save OTP to Firestore
+ */
+export const saveSignupOTP = async (uid: string, email: string, code: string) => {
+  try {
+    const otpRef = doc(db, "otps", uid);
+    await setDoc(otpRef, {
+      uid,
+      email,
+      code,
+      expiresAt: Timestamp.fromMillis(Date.now() + 10 * 60 * 1000), // 10 minutes
+      createdAt: serverTimestamp(),
+    });
+  } catch (error) {
+    console.error("Error saving OTP:", error);
+    throw new Error("Failed to generate verification code");
+  }
+};
+
+/**
+ * Verify OTP and unlock account
+ */
+export const verifySignupOTP = async (uid: string, code: string) => {
+  try {
+    const otpDoc = await getDoc(doc(db, "otps", uid));
+
+    if (!otpDoc.exists()) {
+      throw new Error("Invalid or expired verification code");
+    }
+
+    const data = otpDoc.data();
+    const now = Timestamp.now();
+
+    if (data.code !== code) {
+      throw new Error("Incorrect verification code");
+    }
+
+    if (now.toMillis() > data.expiresAt.toMillis()) {
+      throw new Error("Verification code has expired");
+    }
+
+    // Mark user as verified and give starting credits
+    const userRef = doc(db, "users", uid);
+    await updateDoc(userRef, {
+      otpVerified: true,
+      credits: 10, // Give 10 credits upon verification
+      updatedAt: serverTimestamp(),
+    });
+
+    // Clean up OTP document
+    await deleteDoc(doc(db, "otps", uid));
+
+    return true;
+  } catch (error) {
+    console.error("OTP Verification error:", error);
+    throw error;
+  }
 };
 
 /**

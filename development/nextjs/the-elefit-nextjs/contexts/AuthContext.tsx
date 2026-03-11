@@ -15,24 +15,26 @@ export interface AuthUser extends User {
   shopifyMapped?: boolean;
   shopifyCustomerId?: string | null;
   credits?: number;
+  otpVerified?: boolean;
 }
 
 export interface AuthContextType {
   user: AuthUser | null;
   loading: boolean;
   error: string | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<User>;
   signup: (
     email: string,
     password: string,
     userType: "customer" | "expert" | "admin",
     firstName: string,
     lastName: string
-  ) => Promise<void>;
+  ) => Promise<User>;
   logout: () => Promise<void>;
   userType: "customer" | "expert" | "admin" | null;
   isAuthenticated: boolean;
   authenticate: (sessionData: any) => void;
+  refreshProfile: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(
@@ -107,6 +109,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             shopifyMapped: profile?.shopifyMapped || false,
             shopifyCustomerId: profile?.shopifyCustomerId || null,
             credits: profile?.credits || 0,
+            otpVerified: profile?.otpVerified || false,
           } as AuthUser);
           setUserType(type);
         } else {
@@ -141,6 +144,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setLoading(false);
   };
 
+  const refreshProfile = async () => {
+    if (!user) return;
+    try {
+      const profile = await getUserProfile(user.uid);
+      setUser(prev => prev ? {
+        ...prev,
+        ...profile,
+        otpVerified: profile?.otpVerified || false,
+        credits: profile?.credits || 0,
+      } : null);
+    } catch (err) {
+      console.error("Error refreshing profile:", err);
+    }
+  };
+
   const login = async (email: string, password: string) => {
     try {
       setError(null);
@@ -157,8 +175,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         shopifyMapped: profile?.shopifyMapped || false,
         shopifyCustomerId: profile?.shopifyCustomerId || null,
         credits: profile?.credits || 0,
+        otpVerified: profile?.otpVerified || false,
       } as AuthUser);
       setUserType(type);
+      return firebaseUser;
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Login failed";
@@ -190,9 +210,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser({
         ...firebaseUser,
         userType: userTypeValue,
-        credits: 10, // Default for new users
+        credits: 0,
+        otpVerified: false,
       } as AuthUser);
       setUserType(userTypeValue);
+      return firebaseUser;
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Signup failed";
@@ -232,6 +254,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         userType,
         isAuthenticated: !!user,
         authenticate,
+        refreshProfile,
       }}
     >
       {children}

@@ -24,9 +24,12 @@ export const sendEmail = async (
   params: EmailParams
 ) => {
   try {
-    const response = await emailjs.send(serviceId, templateId, {
-      ...params,
-    });
+    const response = await emailjs.send(
+      serviceId,
+      templateId,
+      { ...params },
+      process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY
+    );
     return response;
   } catch (error) {
     throw new Error(
@@ -171,5 +174,44 @@ export const sendContactFormEmail = async (
     );
   } catch (error) {
     console.error("Error sending contact form email:", error);
+  }
+};
+/**
+ * Send signup OTP email
+ */
+export const sendSignupOTP = async (email: string, otpCode: string) => {
+  const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
+  const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
+
+  if (!serviceId || !templateId || templateId.includes("your_emailjs_template_id_here")) {
+    console.error("❌ EmailJS Configuration Error: Service ID or Template ID is missing/placeholder.");
+    return;
+  }
+
+  try {
+    // Try the generic template first as it's what most users have configured
+    await sendEmail(serviceId, templateId, {
+      to_email: email,
+      email: email, // Match user's {{email}} tag
+      otp_code: otpCode,
+      passcode: otpCode, // Match user's {{passcode}} tag
+      subject: `${otpCode} is your EleFit verification code`,
+      message: `Your verification code for EleFit is: ${otpCode}. This code will expire in 10 minutes.`,
+    });
+  } catch (error) {
+    console.error("Error sending signup OTP:", error);
+    // If that fails, try the hardcoded suggestion as a last resort
+    try {
+      await sendEmail(serviceId, "signup_otp_template", {
+        to_email: email,
+        email: email,
+        otp_code: otpCode,
+        passcode: otpCode,
+        subject: `${otpCode} is your EleFit verification code`,
+        message: `Your verification code for EleFit is: ${otpCode}. This code will expire in 10 minutes.`,
+      });
+    } catch (fallbackError) {
+      console.error("Error sending signup OTP (fallback):", fallbackError);
+    }
   }
 };
