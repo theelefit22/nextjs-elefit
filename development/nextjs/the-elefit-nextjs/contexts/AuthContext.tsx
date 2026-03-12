@@ -150,6 +150,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       shopifyCustomerId: sessionData.customerId,
       shopifyMapped: true,
       credits: sessionData.credits || 0,
+      otpVerified: sessionData.otpVerified || false,
     } as AuthUser;
 
     setUser(mockUser);

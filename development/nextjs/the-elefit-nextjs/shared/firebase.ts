@@ -53,6 +53,7 @@ import {
   checkShopifyCustomerExists,
   createShopifyCustomer
 } from "@/lib/shopify";
+import { sendSignupOTP } from "./emailService";
 
 // Firebase configuration from environment variables
 const firebaseConfig = {
@@ -302,6 +303,17 @@ export const saveSignupOTP = async (uid: string, email: string, code: string) =>
 };
 
 /**
+ * Unified OTP Trigger: Generates, Saves, and Sends OTP
+ */
+export const triggerOTPVerification = async (email: string, uid: string) => {
+  const code = generateOTP();
+  await saveSignupOTP(uid, email, code);
+  await sendSignupOTP(email, code);
+  console.log(`✅ OTP triggered for ${email}`);
+  return code;
+};
+
+/**
  * Verify OTP and unlock account
  */
 export const verifySignupOTP = async (uid: string, code: string) => {
@@ -351,7 +363,16 @@ export const loginUser = async (email: string, password: string) => {
   try {
     // 1. Try direct Firebase login
     const userCredential = await signInWithEmailAndPassword(auth, normalizedEmail, password);
-    return userCredential.user;
+    const user = userCredential.user;
+
+    // Check if verified, if not trigger OTP
+    const profile = await getUserProfile(user.uid);
+    if (profile && !profile.otpVerified && !user.emailVerified) {
+      console.log("⚠️ User unverified, triggering OTP...");
+      await triggerOTPVerification(normalizedEmail, user.uid);
+    }
+
+    return user;
   } catch (firebaseError: any) {
     console.warn("Firebase login failed, trying Shopify...");
 
@@ -425,8 +446,8 @@ export const mapShopifyUserToFirebase = async (
         lastName: shopifyCustomer.lastName || "",
         shopifyCustomerId: shopifyCustomer.id,
         shopifyMapped: true,
-        otpVerified: true, // Auto-verified if coming from Shopify login
-        credits: 10,       // Gift credits to legacy shopify users
+        otpVerified: false, // Now required to verify even if from Shopify
+        credits: 0,         // Wait for OTP verification to give 10 credits
         createdAt: new Date(),
         profileImageUrl: null,
       });
@@ -592,12 +613,20 @@ export const authenticateCustomer = async (customerObject: { email: string; cust
     try {
       const userCredential = await signInWithEmailAndPassword(auth, normalizedEmail, bridgePassword);
 
+      // Check if verified, if not trigger OTP
+      const profile = await getUserProfile(userCredential.user.uid);
+      if (profile && !profile.otpVerified) {
+        console.log("⚠️ Bridge login user unverified, triggering OTP...");
+        await triggerOTPVerification(normalizedEmail, userCredential.user.uid);
+      }
+
       return {
         success: true,
         authenticated: true,
         uid: userCredential.user.uid,
         email: normalizedEmail,
         shopifyCustomerId: customerId,
+        otpVerified: profile?.otpVerified || false,
         message: "Customer logged in automatically via bridge"
       };
     } catch (loginError: any) {
@@ -612,6 +641,7 @@ export const authenticateCustomer = async (customerObject: { email: string; cust
         uid: uid,
         email: normalizedEmail,
         shopifyCustomerId: customerId,
+        otpVerified: false, // Since they need Firebase Auth to see the profile usually
         message: "Customer verified via Shopify (Manual sign-in may be required for some features)"
       };
     }

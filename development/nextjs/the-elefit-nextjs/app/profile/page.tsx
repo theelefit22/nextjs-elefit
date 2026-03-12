@@ -236,21 +236,22 @@ function ProfileContent() {
                             </div>
                             <div>
                                 <h4 className="text-sm font-bold text-white tracking-tight">Email not verified</h4>
-                                <p className="text-xs text-white/40">Please verify your email to unlock AI plan generation.</p>
+                                <p className="text-xs text-white/40">Please verify your email to unlock AI plan generation and get 10 credits.</p>
                             </div>
                         </div>
                         <button
                             onClick={async () => {
                                 try {
-                                    await sendVerificationEmail();
-                                    setMessage({ text: 'Verification email sent!', type: 'success' });
+                                    const { triggerOTPVerification } = await import('@/shared/firebase');
+                                    await triggerOTPVerification(currentUser.email!, currentUser.uid);
+                                    router.push('/auth?isSignUp=true&message=Verification+code+sent!&verified=false');
                                 } catch (e: any) {
                                     setMessage({ text: e.message, type: 'error' });
                                 }
                             }}
-                            className="flex items-center gap-2 px-6 py-2 bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-white hover:bg-white/10 transition-all uppercase tracking-widest whitespace-nowrap"
+                            className="flex items-center gap-2 px-6 py-2 bg-primary text-black rounded-xl text-xs font-bold hover:bg-primary/90 transition-all uppercase tracking-widest whitespace-nowrap"
                         >
-                            <Send className="w-3 h-3" /> Resend Email
+                            <ShieldCheck className="w-3 h-3" /> Verify Account
                         </button>
                     </div>
                 )}

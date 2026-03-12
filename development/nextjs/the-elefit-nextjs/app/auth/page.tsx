@@ -86,7 +86,8 @@ function AuthContent() {
                         customerId: result.shopifyCustomerId,
                         verified: true,
                         timestamp: Date.now(),
-                        userType: 'customer'
+                        userType: 'customer',
+                        otpVerified: result.otpVerified || false
                     };
                     localStorage.setItem('verifiedCustomerSession', JSON.stringify(verifiedSession));
 
