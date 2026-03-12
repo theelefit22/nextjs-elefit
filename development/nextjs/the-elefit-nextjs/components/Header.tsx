@@ -29,6 +29,7 @@ export function Header() {
               src="/logo.png"
               alt="ELEFIT"
               fill
+              sizes="120px"
               className="object-contain"
               priority
             />

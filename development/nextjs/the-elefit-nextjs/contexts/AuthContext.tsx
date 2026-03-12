@@ -101,17 +101,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (firebaseUser) {
           // Fetch user type from profile
           const profile = await getUserProfile(firebaseUser.uid);
-          const type = profile?.userType || null;
+          let currentCredits = profile?.credits || 0;
+          let currentOtpVerified = profile?.otpVerified || false;
+
+          // LEGACY CREDIT GIFT: If user is verified but has 0 credits, grant 10
+          if ((firebaseUser.emailVerified || currentOtpVerified) && (profile?.credits === undefined || profile?.credits === 0)) {
+            console.log("🎁 Gifting 10 credits to legacy verified user:", firebaseUser.email);
+            const { doc, updateDoc, getFirestore } = await import('firebase/firestore');
+            const db = getFirestore();
+            await updateDoc(doc(db, "users", firebaseUser.uid), {
+              credits: 10,
+              updatedAt: new Date()
+            });
+            currentCredits = 10;
+          }
 
           setUser({
             ...firebaseUser,
-            userType: type,
+            userType: profile?.userType || null,
             shopifyMapped: profile?.shopifyMapped || false,
             shopifyCustomerId: profile?.shopifyCustomerId || null,
-            credits: profile?.credits || 0,
-            otpVerified: profile?.otpVerified || false,
+            credits: currentCredits,
+            otpVerified: currentOtpVerified,
           } as AuthUser);
-          setUserType(type);
+          setUserType(profile?.userType || null);
         } else {
           setUser(null);
           setUserType(null);

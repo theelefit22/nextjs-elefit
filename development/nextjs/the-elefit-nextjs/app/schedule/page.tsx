@@ -50,18 +50,28 @@ function ScheduleContent() {
     const [savedPlanData, setSavedPlanData] = useState<any>(null);
     const [selectedDayIndex, setSelectedDayIndex] = useState(0);
     const [activeTab, setActiveTab] = useState<'meals' | 'workout' | 'suggestions'>('meals');
-    const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-        Breakfast: true,
-        Lunch: true,
-        Snacks: true,
-        Dinner: true,
-        MON: true,
-    });
+    const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
     const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
     const [planName, setPlanName] = useState('My Custom Plan');
     const [isSaving, setIsSaving] = useState(false);
     const [isPlanSaved, setIsPlanSaved] = useState(false);
     const [isSaveEditDrawerOpen, setIsSaveEditDrawerOpen] = useState(false);
+
+    // Initialize accordions based on screen size
+    useEffect(() => {
+        const isDesktop = window.innerWidth >= 768;
+        if (isDesktop) {
+            setExpandedSections({
+                Breakfast: true,
+                Lunch: true,
+                Snacks: true,
+                Dinner: true,
+                ...DAYS.reduce((acc, day) => ({ ...acc, [day]: true }), {})
+            });
+        } else {
+            setExpandedSections({});
+        }
+    }, []);
 
     // Timer for Save/Edit Drawer (2 minutes)
     useEffect(() => {
@@ -279,7 +289,7 @@ function ScheduleContent() {
                         <div className="bg-[#1a1c14] border-b border-[#212121] px-6 md:px-8 py-6 flex items-center justify-between gap-6">
                             <div className="space-y-2">
                                 <h2 className="text-sm md:text-lg font-bold text-white tracking-tight flex items-baseline gap-2">
-                                    <span className="text-[#898989] font-black uppercase text-[10px] md:text-xs tracking-widest whitespace-nowrap">Goal:</span>
+                                    <span className="text-[#898989] font-black uppercase text-[10px] md:text-xs tracking-widest whitespace-nowrap">Plan Goal:</span>
                                     {headerData.prompt}
                                 </h2>
                                 <div className="flex items-center gap-4">
@@ -303,9 +313,9 @@ function ScheduleContent() {
                             </button>
                         </div>
 
-                        {/* Centered Tabs inside container */}
+                        {/* Robust Centered Tabs Container */}
                         <div className="bg-[#0c0c0c]/50 px-4 md:px-8 py-4 border-b border-[#212121]">
-                            <div className="flex items-center justify-between md:justify-center gap-6 md:gap-12">
+                            <div className="flex items-center justify-center gap-10 md:gap-12 mx-auto w-fit">
                                 {(['meals', 'workout', 'suggestions'] as const).map((tab) => {
                                     const isActive = activeTab === tab;
                                     const labels = { meals: 'Meal Plans', workout: 'Workout', suggestions: 'Plan Suggestions' };
@@ -315,11 +325,11 @@ function ScheduleContent() {
                                         <button
                                             key={tab}
                                             onClick={() => setActiveTab(tab)}
-                                            className="group relative py-2 flex flex-col md:flex-row items-center gap-1 md:gap-2"
+                                            className="group relative py-2 flex items-center gap-2"
                                         >
                                             <div className="flex items-center gap-2">
                                                 <span className={`text-base transition-opacity ${isActive ? 'opacity-100' : 'opacity-40 group-hover:opacity-100'}`}>{icons[tab]}</span>
-                                                <span className={`text-[10px] md:text-[11px] font-black uppercase tracking-[0.1em] md:tracking-[0.2em] transition-colors ${isActive ? 'text-primary' : 'text-[#898989] group-hover:text-white'}`}>
+                                                <span className={`text-[10px] md:text-[11px] font-black uppercase tracking-[0.1em] md:tracking-[0.2em] transition-colors ${isActive ? 'text-primary' : 'text-[#898989] group-hover:text-white'} ${!isActive ? 'hidden md:inline' : ''}`}>
                                                     {labels[tab]}
                                                 </span>
                                             </div>
@@ -337,10 +347,14 @@ function ScheduleContent() {
                             {activeTab === 'meals' ? (
                                 <>
                                     {/* Goal */}
-                                    <div className="flex items-center justify-center gap-2">
-                                        <span className="text-xs font-bold uppercase tracking-widest text-[#454545]">Daily Intake</span>
-                                        <span className="h-px w-8 bg-[#212121]" />
-                                        <span className="text-lg md:text-xl font-black text-primary">🔥 {headerData.calories} kcal</span>
+                                    <div className="flex items-center justify-between gap-2 mb-6">
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-sm font-bold text-white uppercase tracking-widest">DAILY INTAKE</span>
+                                            <div className="flex items-center gap-1.5 bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
+                                                <span className="text-sm">🔥</span>
+                                                <span className="text-sm font-black text-primary tracking-tighter">{headerData.calories} kcal</span>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     {/* Meals Grid */}

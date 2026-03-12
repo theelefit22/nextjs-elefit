@@ -88,31 +88,111 @@ export const getCustomerByToken = async (accessToken: string) => {
  * (Uses a dummy login attempt to check for UNIDENTIFIED_CUSTOMER error)
  */
 export const checkShopifyCustomerExists = async (email: string) => {
+  const query = gql`
+    query {
+      shop {
+        name
+      }
+    }
+  `;
+
+  try {
+    // Attempting to create with an empty password/names just to check for EMAIL_ALREADY_EXISTS 
+    // is one way, but customerRecover is safer if it works correctly.
+    // Let's stick with customerRecover but improve error parsing.
+    const mutation = gql`
+      mutation customerRecover($email: String!) {
+        customerRecover(email: $email) {
+          customerUserErrors {
+            code
+            message
+          }
+        }
+      }
+    `;
+
+    const variables = { email };
+    const data: any = await shopifyClient.request(mutation, variables);
+    const errors = data.customerRecover.customerUserErrors;
+
+    // If there are no errors, it means the recovery email was "sent" (or would be),
+    // which implies the customer exists.
+    if (errors.length === 0) return true;
+
+    // Check for specific "not found" codes
+    const notFound = errors.some((e: any) =>
+      e.code === 'CUSTOMER_DOES_NOT_EXIST' ||
+      e.message.toLowerCase().includes('not found') ||
+      e.code === 'UNIDENTIFIED_CUSTOMER'
+    );
+
+    return !notFound;
+  } catch (error: any) {
+    if (error.message?.includes('403') || error.message?.includes('401')) {
+      console.error('❌ Shopify API Auth Error: Check if Storefront Access Token has "unauthenticated_write_customers" permission.');
+    }
+    console.error('Shopify existence check error:', error);
+    return false;
+  }
+};
+
+/**
+ * Create a new customer in Shopify
+ */
+export const createShopifyCustomer = async (input: {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+}) => {
   const mutation = gql`
-    mutation customerRecover($email: String!) {
-      customerRecover(email: $email) {
+    mutation customerCreate($input: CustomerCreateInput!) {
+      customerCreate(input: $input) {
+        customer {
+          id
+          email
+        }
         customerUserErrors {
           code
+          field
           message
         }
       }
     }
   `;
 
-  const variables = { email };
+  const variables = {
+    input: {
+      email: input.email,
+      password: input.password,
+      firstName: input.firstName,
+      lastName: input.lastName,
+      acceptsMarketing: false,
+    },
+  };
 
   try {
     const data: any = await shopifyClient.request(mutation, variables);
-    const errors = data.customerRecover.customerUserErrors;
+    const { customerCreate } = data;
 
-    // If there is an error code "CUSTOMER_DOES_NOT_EXIST", then return false
-    const hasNonExistentError = errors.some((e: any) =>
-      e.code === 'CUSTOMER_DOES_NOT_EXIST' || e.message.toLowerCase().includes('not found')
-    );
+    if (customerCreate.customerUserErrors.length > 0) {
+      const errors = customerCreate.customerUserErrors;
+      console.error('❌ Shopify Customer Creation Errors:', errors);
+      const error = errors[0];
 
-    return !hasNonExistentError;
-  } catch (error) {
-    console.error('Shopify existence check error:', error);
-    return false;
+      let friendlyMessage = error.message || 'Failed to create Shopify customer';
+      if (error.code === 'TAKEN') {
+        friendlyMessage = 'An account with this email already exists in our store.';
+      } else if (error.code === 'TOO_SHORT') {
+        friendlyMessage = 'Password is too short for Shopify (minimum 5 characters).';
+      }
+
+      throw new Error(friendlyMessage);
+    }
+
+    return customerCreate.customer;
+  } catch (error: any) {
+    console.error('Shopify customer creation error:', error);
+    throw error;
   }
 };

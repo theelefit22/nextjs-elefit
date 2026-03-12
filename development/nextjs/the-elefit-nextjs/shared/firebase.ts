@@ -50,7 +50,8 @@ import { getDatabase, Database, ref as dbRef, set, get } from "firebase/database
 import {
   loginShopifyCustomer,
   getCustomerByToken,
-  checkShopifyCustomerExists
+  checkShopifyCustomerExists,
+  createShopifyCustomer
 } from "@/lib/shopify";
 
 // Firebase configuration from environment variables
@@ -169,13 +170,28 @@ export const signupUser = async (
         const accessToken = await loginShopifyCustomer(normalizedEmail, password);
         const customer = await getCustomerByToken(accessToken);
         shopifyId = customer.id;
-        console.log("Existing Shopify user verified.");
+        console.log("Existing Shopify user verified and linked.");
       } catch (shopifyError: any) {
-        console.warn("Shopify check failed during signup. Proceeding with Firebase registration only:", shopifyError.message);
-        // We do NOT throw here anymore to prevent blocking registration
+        console.warn("Shopify link failed during signup:", shopifyError.message);
+        // If linking fails, we might still want to proceed, but let's be more vocal
       }
     } else {
-      console.log("User does not exist in Shopify. Proceeding with Firebase-only registration.");
+      console.log("User does not exist in Shopify. Attempting to create Shopify account...");
+      try {
+        const newShopifyCustomer = await createShopifyCustomer({
+          email: normalizedEmail,
+          password: password,
+          firstName,
+          lastName
+        });
+        shopifyId = newShopifyCustomer.id;
+        console.log("Successfully created and linked Shopify customer:", shopifyId);
+      } catch (createError: any) {
+        console.error("❌ Shopify Creation Error:", createError.message);
+        // Re-throw if it's a critical error we want the user to see
+        // For now, let's throw it so the UI shows "Account creation failed: [Shopify Error]"
+        throw new Error(`Shopify Sync Error: ${createError.message}`);
+      }
     }
 
     // 3. Create user in Firebase Auth
@@ -409,6 +425,8 @@ export const mapShopifyUserToFirebase = async (
         lastName: shopifyCustomer.lastName || "",
         shopifyCustomerId: shopifyCustomer.id,
         shopifyMapped: true,
+        otpVerified: true, // Auto-verified if coming from Shopify login
+        credits: 10,       // Gift credits to legacy shopify users
         createdAt: new Date(),
         profileImageUrl: null,
       });
