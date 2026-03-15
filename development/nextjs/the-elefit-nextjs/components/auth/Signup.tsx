@@ -321,7 +321,7 @@ export default function Signup({ onSwitchToLogin }: SignupProps) {
                     onVerified={async () => {
                         await refreshProfile();
                         setSuccess('Email verified! Welcome to EleFit.');
-                        setTimeout(() => router.push('/profile'), 1500);
+                        setTimeout(() => router.push('/ai-coach/welcome'), 1500);
                     }}
                 />
             </div>

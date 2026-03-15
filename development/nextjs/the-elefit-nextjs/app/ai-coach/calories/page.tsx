@@ -54,7 +54,7 @@ export default function Calories() {
 
                 console.log("Fetching targets with data:", data);
 
-                const response = await fetch('https://backend-aicoach.onrender.com/user', {
+                const response = await fetch('https://yantraprise.com/user', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -143,7 +143,7 @@ export default function Calories() {
 
             // 1. Generate Meal Plan (Conditional)
             if (data.helpType === 'meal' || data.helpType === 'both') {
-                const mealResponse = await fetch('https://backend-aicoach.onrender.com/mealplan', {
+                const mealResponse = await fetch('https://yantraprise.com/mealplan', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -172,7 +172,7 @@ export default function Calories() {
 
             // 2. Generate Workout Plan (Conditional)
             if (data.helpType === 'workout' || data.helpType === 'both') {
-                const workoutResponse = await fetch('https://backend-aicoach.onrender.com/workoutplan', {
+                const workoutResponse = await fetch('https://yantraprise.com/workoutplan', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

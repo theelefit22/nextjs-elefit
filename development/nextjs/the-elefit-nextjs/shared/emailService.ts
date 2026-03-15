@@ -190,8 +190,16 @@ export const sendSignupOTP = async (email: string, otpCode: string) => {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to send OTP email');
+      const text = await response.text();
+      let errorMessage = `Server error (${response.status})`;
+      try {
+        const json = JSON.parse(text);
+        errorMessage = json.error || errorMessage;
+      } catch (e) {
+        // Not JSON, use truncated text as error
+        errorMessage = text.substring(0, 100) || errorMessage;
+      }
+      throw new Error(errorMessage);
     }
 
     console.log(`✅ Resend OTP triggered successfully for ${email}`);
