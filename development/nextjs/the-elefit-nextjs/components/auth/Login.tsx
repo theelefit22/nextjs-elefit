@@ -66,19 +66,17 @@ export default function Login({ onSwitchToSignup, onUnverified }: LoginProps) {
         setLoading(true);
 
         try {
-            await login(email, password);
+            const loggedInUser: any = await login(email, password);
             setSuccess('Login successful! Redirecting...');
 
-            if (user && !user.otpVerified && !user.emailVerified && onUnverified) {
-                onUnverified(email, user.uid);
+            if (loggedInUser && !loggedInUser.otpVerified && !loggedInUser.emailVerified && onUnverified) {
+                onUnverified(email, loggedInUser.uid);
                 return;
             }
 
             // Redirect based on user type or search params
             const redirectPath = searchParams.get('redirect') || '/';
-            setTimeout(() => {
-                router.push(redirectPath);
-            }, 1000);
+            router.push(redirectPath);
         } catch (err: any) {
             const code = err.code || '';
             const message = err.message || '';

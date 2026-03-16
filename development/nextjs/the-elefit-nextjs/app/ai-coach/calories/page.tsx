@@ -11,7 +11,7 @@ import { decrementCredits } from '@/shared/firebase';
 export default function Calories() {
     const router = useRouter();
     const { data, updateData } = useAiCoach();
-    const { user } = useAuth();
+    const { user, refreshProfile } = useAuth();
     const [mounted, setMounted] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -135,6 +135,7 @@ export default function Calories() {
 
             // Deduct credit
             await decrementCredits(user.uid);
+            await refreshProfile();
 
             updateData({ mealPlan: null, workoutPlan: null });
 

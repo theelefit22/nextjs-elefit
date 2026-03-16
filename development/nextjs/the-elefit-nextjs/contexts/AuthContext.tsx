@@ -95,11 +95,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     const unsubscribe = subscribeToAuthStateChanges(async (firebaseUser) => {
       try {
+        // 1. Check for verified session as a fast-path fallback
         const hasVerifiedSession = await checkVerifiedSession();
-        if (hasVerifiedSession) return; // If we have a verified session, let it take precedence
 
         if (firebaseUser) {
-          // Fetch user type from profile
+          // Fetch fresh profile regardless of local session to ensure sync
           const profile = await getUserProfile(firebaseUser.uid);
           let currentCredits = profile?.credits || 0;
           let currentOtpVerified = profile?.otpVerified || false;
@@ -116,16 +116,32 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             currentCredits = 10;
           }
 
-          setUser({
+          const freshUser = {
             ...firebaseUser,
             userType: profile?.userType || null,
             shopifyMapped: profile?.shopifyMapped || false,
             shopifyCustomerId: profile?.shopifyCustomerId || null,
             credits: currentCredits,
             otpVerified: currentOtpVerified,
-          } as AuthUser);
+          } as AuthUser;
+
+          setUser(freshUser);
           setUserType(profile?.userType || null);
-        } else {
+
+          // Update local session storage with fresh data
+          if (typeof window !== 'undefined' && profile?.otpVerified) {
+            localStorage.setItem('verifiedCustomerSession', JSON.stringify({
+              uid: firebaseUser.uid,
+              email: firebaseUser.email,
+              customerId: profile.shopifyCustomerId,
+              verified: true,
+              timestamp: Date.now(),
+              credits: currentCredits,
+              otpVerified: currentOtpVerified,
+              userType: profile.userType
+            }));
+          }
+        } else if (!hasVerifiedSession) {
           setUser(null);
           setUserType(null);
         }
@@ -162,12 +178,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (!user) return;
     try {
       const profile = await getUserProfile(user.uid);
+      const isOtpVerified = profile?.otpVerified || false;
+      const credits = profile?.credits || 0;
+
       setUser(prev => prev ? {
         ...prev,
         ...profile,
-        otpVerified: profile?.otpVerified || false,
-        credits: profile?.credits || 0,
+        otpVerified: isOtpVerified,
+        credits: credits,
       } : null);
+
+      // Keep local session storage in sync
+      if (typeof window !== 'undefined' && isOtpVerified) {
+        localStorage.setItem('verifiedCustomerSession', JSON.stringify({
+          uid: user.uid,
+          email: user.email,
+          customerId: profile?.shopifyCustomerId,
+          verified: true,
+          timestamp: Date.now(),
+          credits: credits,
+          otpVerified: isOtpVerified,
+          userType: profile?.userType
+        }));
+      }
     } catch (err) {
       console.error("Error refreshing profile:", err);
     }
@@ -183,16 +216,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const profile = await getUserProfile(firebaseUser.uid);
       const type = profile?.userType || null;
 
-      setUser({
+      const authUser = {
         ...firebaseUser,
         userType: type,
         shopifyMapped: profile?.shopifyMapped || false,
         shopifyCustomerId: profile?.shopifyCustomerId || null,
         credits: profile?.credits || 0,
         otpVerified: profile?.otpVerified || false,
-      } as AuthUser);
+      } as AuthUser;
+
+      setUser(authUser);
       setUserType(type);
-      return firebaseUser;
+      return authUser;
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Login failed";
@@ -221,14 +256,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         lastName
       );
 
-      setUser({
+      const authUser = {
         ...firebaseUser,
         userType: userTypeValue,
         credits: 0,
         otpVerified: false,
-      } as AuthUser);
+      } as AuthUser;
+
+      setUser(authUser);
       setUserType(userTypeValue);
-      return firebaseUser;
+      return authUser;
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Signup failed";

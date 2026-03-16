@@ -85,8 +85,22 @@ const SHOPIFY_TRANSFER_SECRET = "EleFit_Secret_2026_Shopify_Transfer";
 /**
  * Derives a deterministic password from a Shopify Customer ID
  */
+/**
+ * Normalizes a Shopify ID by extracting only the numeric part.
+ * Handles both "123456789" and "gid://shopify/Customer/123456789"
+ */
+const normalizeShopifyId = (id: string | number | null | undefined): string | null => {
+  if (!id) return null;
+  const idStr = String(id);
+  if (idStr.includes('gid://shopify/Customer/')) {
+    return idStr.split('/').pop() || idStr;
+  }
+  return idStr;
+};
+
 const getBridgePassword = (customerId: string) => {
-  return `${SHOPIFY_BRIDGE_SALT}${customerId}`;
+  const normalizedId = normalizeShopifyId(customerId);
+  return `${SHOPIFY_BRIDGE_SALT}${normalizedId}`;
 };
 
 /**
@@ -335,13 +349,22 @@ export const verifySignupOTP = async (uid: string, code: string) => {
       throw new Error("Verification code has expired");
     }
 
-    // Mark user as verified and give starting credits
+    // Mark user as verified and give starting credits if they don't have them
     const userRef = doc(db, "users", uid);
-    await updateDoc(userRef, {
+    const userSnap = await getDoc(userRef);
+    const userData = userSnap.data();
+
+    const updateData: any = {
       otpVerified: true,
-      credits: 10, // Give 10 credits upon verification
       updatedAt: serverTimestamp(),
-    });
+    };
+
+    // Only give 10 credits if the user doesn't already have credits
+    if (!userData?.credits || userData.credits === 0) {
+      updateData.credits = 10;
+    }
+
+    await updateDoc(userRef, updateData);
 
     // Clean up OTP document
     await deleteDoc(doc(db, "otps", uid));
@@ -386,13 +409,29 @@ export const loginUser = async (email: string, password: string) => {
       // 3. Map Shopify user to Firebase
       const mappingResult = await mapShopifyUserToFirebase(normalizedEmail, password, shopifyCustomer);
 
-      // If auto-created, we still need to log them in properly to Firebase
-      // But the mappingResult already gives us what we need for the session
-      // In a real app, you might want to sign in with a custom token or just use the UID
+      // 4. Try to sign in to Firebase
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, normalizedEmail, password);
+        return userCredential.user;
+      } catch (innerError) {
+        // If password login fails, it might be an auto-created account with a bridge password
+        console.log("Password login failed, trying bridge password...");
+        const normalizedCustomerId = normalizeShopifyId(shopifyCustomer.id);
+        const bridgePassword = getBridgePassword(normalizedCustomerId!);
+        const userCredential = await signInWithEmailAndPassword(auth, normalizedEmail, bridgePassword);
 
-      // For now, let's try to sign in with the password we just verified with Shopify
-      const userCredential = await signInWithEmailAndPassword(auth, normalizedEmail, password);
-      return userCredential.user;
+        // SUCCESS! Sync their password for future direct logins
+        const user = userCredential.user;
+        try {
+          const { updatePassword } = await import('firebase/auth');
+          await updatePassword(user, password);
+          console.log("✅ Synchronized Shopify password to Firebase.");
+        } catch (syncError) {
+          console.error("Failed to sync password:", syncError);
+        }
+
+        return user;
+      }
 
     } catch (shopifyError: any) {
       console.error("Shopify login also failed:", shopifyError.message);
@@ -425,18 +464,21 @@ export const mapShopifyUserToFirebase = async (
     if (!querySnapshot.empty) {
       // Existing user: Update with Shopify info if missing
       const userDoc = querySnapshot.docs[0];
+      const normalizedCustomerId = normalizeShopifyId(shopifyCustomer.id);
+
       await updateDoc(doc(db, "users", userDoc.id), {
-        shopifyCustomerId: shopifyCustomer.id,
+        shopifyCustomerId: normalizedCustomerId,
         shopifyMapped: true,
         updatedAt: new Date(),
       });
-      console.log("Updated existing user with Shopify ID");
+      console.log("Updated existing user with normalized Shopify ID:", normalizedCustomerId);
       return { uid: userDoc.id, isNew: false };
     } else {
       // New user: Create in Firebase Auth and Firestore
       console.log("Auto-creating Firebase user for Shopify customer");
       const userCredential = await createUserWithEmailAndPassword(auth, normalizedEmail, password);
       const user = userCredential.user;
+      const normalizedCustomerId = normalizeShopifyId(shopifyCustomer.id);
 
       await setDoc(doc(db, "users", user.uid), {
         email: normalizedEmail,
@@ -444,7 +486,7 @@ export const mapShopifyUserToFirebase = async (
         userType: "customer",
         firstName: shopifyCustomer.firstName || "",
         lastName: shopifyCustomer.lastName || "",
-        shopifyCustomerId: shopifyCustomer.id,
+        shopifyCustomerId: normalizedCustomerId,
         shopifyMapped: true,
         otpVerified: false, // Now required to verify even if from Shopify
         credits: 0,         // Wait for OTP verification to give 10 credits
@@ -587,29 +629,31 @@ export const authenticateCustomer = async (customerObject: { email: string; cust
     let uid = "";
     let isNew = false;
 
+    const normalizedCustomerId = normalizeShopifyId(customerId);
+
     if (!querySnapshot.empty) {
       // Existing user
       const userDoc = querySnapshot.docs[0];
       uid = userDoc.id;
 
       // Update customer ID if needed
-      if (userDoc.data().shopifyCustomerId !== customerId) {
+      if (userDoc.data().shopifyCustomerId !== normalizedCustomerId) {
         await updateDoc(doc(db, "users", uid), {
-          shopifyCustomerId: customerId,
+          shopifyCustomerId: normalizedCustomerId,
           shopifyMapped: true,
           updatedAt: new Date(),
         });
       }
     } else {
       // New user - Auto-create them using the bridge password
-      const bridgePassword = getBridgePassword(customerId);
-      const shopifyCustomer = { id: customerId, email: normalizedEmail };
+      const bridgePassword = getBridgePassword(normalizedCustomerId!);
+      const shopifyCustomer = { id: normalizedCustomerId, email: normalizedEmail };
       const mappingResult = await mapShopifyUserToFirebase(normalizedEmail, bridgePassword, shopifyCustomer);
       uid = mappingResult.uid;
     }
 
     // 3. PERFORM ACTUAL LOGIN to Firebase Auth using the bridge password
-    const bridgePassword = getBridgePassword(customerId);
+    const bridgePassword = getBridgePassword(normalizedCustomerId!);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, normalizedEmail, bridgePassword);
 
