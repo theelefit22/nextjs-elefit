@@ -87,7 +87,8 @@ function AuthContent() {
                         verified: true,
                         timestamp: Date.now(),
                         userType: 'customer',
-                        otpVerified: result.otpVerified || false
+                        otpVerified: result.otpVerified || false,
+                        credits: result.credits || 0
                     };
                     localStorage.setItem('verifiedCustomerSession', JSON.stringify(verifiedSession));
 

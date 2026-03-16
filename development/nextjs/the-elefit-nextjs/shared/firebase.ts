@@ -671,13 +671,15 @@ export const authenticateCustomer = async (customerObject: { email: string; cust
         email: normalizedEmail,
         shopifyCustomerId: customerId,
         otpVerified: profile?.otpVerified || false,
+        credits: profile?.credits || 0,
         message: "Customer logged in automatically via bridge"
       };
     } catch (loginError: any) {
       console.warn("Bridge login failed, falling back to verified session only:", loginError.message);
-      // Fallback: If login fails (user might have a manual password), we still return success 
-      // but let the UI know it's a "verified" session only.
-      // This matches the reference project's behavior.
+
+      // Fetch profile anyway to get current status/credits if user exists
+      const profile = await getUserProfile(uid);
+
       return {
         success: true,
         authenticated: false, // Not signed into Firebase Auth, but verified via Shopify
@@ -685,8 +687,9 @@ export const authenticateCustomer = async (customerObject: { email: string; cust
         uid: uid,
         email: normalizedEmail,
         shopifyCustomerId: customerId,
-        otpVerified: false, // Since they need Firebase Auth to see the profile usually
-        message: "Customer verified via Shopify (Manual sign-in may be required for some features)"
+        otpVerified: profile?.otpVerified || false,
+        credits: profile?.credits || 0,
+        message: "Customer verified via Shopify"
       };
     }
   } catch (error: any) {
