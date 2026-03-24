@@ -1040,6 +1040,7 @@ export const saveUserPlan = async (uid: string, planName: string, data: any) => 
     await setDoc(docRef, {
       id: docRef.id,
       name: planName,
+      goal: data.goal || "",
       mealPlan: data.mealPlan,
       workoutPlan: data.workoutPlan,
       calculatedData: data.calculatedData,

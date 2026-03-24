@@ -6,7 +6,8 @@ import { ArrowLeft } from 'lucide-react';
 import BottomNavNew from '@/components/BottomNavNew';
 import { useAiCoach } from '@/contexts/AiCoachContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { decrementCredits } from '@/shared/firebase';
+import { decrementCredits, getUserProfile, updateUserProfile } from '@/shared/firebase';
+import { AiCoachModal } from '@/components/AiCoachModal';
 
 export default function Calories() {
     const router = useRouter();
@@ -21,6 +22,47 @@ export default function Calories() {
         carbsGrams: 0,
         fatGrams: 0,
     });
+    const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+
+    const checkDraftProfile = async () => {
+        if (!user?.uid) return false;
+        try {
+            const profile = await getUserProfile(user.uid);
+            if (!profile) return true;
+
+            const ageDiff = (profile.age || '').toString() !== (data.age || '').toString();
+            const weightDiff = (profile.weight || '').toString() !== (data.currentWeight || '').toString();
+            const heightDiff = (profile.height || '').toString() !== (data.height || '').toString();
+            const targetWeightDiff = (profile.targetWeight || '').toString() !== (data.targetWeight || '').toString();
+            const genderDiff = profile.gender !== data.gender;
+            const activityDiff = profile.activityLevel !== data.activityLevel;
+
+            return ageDiff || weightDiff || heightDiff || targetWeightDiff || genderDiff || activityDiff;
+        } catch (e) {
+            return false;
+        }
+    };
+
+    const handleSaveToProfile = async () => {
+        if (!user?.uid) return;
+        try {
+            await updateUserProfile(user.uid, {
+                age: data.age ? parseInt(data.age) : null,
+                weight: data.currentWeight ? parseInt(data.currentWeight) : null,
+                height: data.height ? parseInt(data.height) : null,
+                targetWeight: data.targetWeight ? parseInt(data.targetWeight) : null,
+                gender: data.gender,
+                activityLevel: data.activityLevel,
+                dietaryRestrictions: data.dietaryText,
+                updatedAt: new Date()
+            });
+            await refreshProfile();
+            router.push('/schedule');
+        } catch (e) {
+            console.error("Failed to save to profile:", e);
+            router.push('/schedule');
+        }
+    };
 
     useEffect(() => {
         const t = requestAnimationFrame(() => setMounted(true));
@@ -54,7 +96,7 @@ export default function Calories() {
 
                 console.log("Fetching targets with data:", data);
 
-                const response = await fetch('https://yantraprise.com/user', {
+                const response = await fetch('https:yantraprise.com/user', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -144,7 +186,7 @@ export default function Calories() {
 
             // 1. Generate Meal Plan (Conditional)
             if (data.helpType === 'meal' || data.helpType === 'both') {
-                const mealResponse = await fetch('https://yantraprise.com/mealplan', {
+                const mealResponse = await fetch('https:yantraprise.com/mealplan', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -173,7 +215,7 @@ export default function Calories() {
 
             // 2. Generate Workout Plan (Conditional)
             if (data.helpType === 'workout' || data.helpType === 'both') {
-                const workoutResponse = await fetch('https://yantraprise.com/workoutplan', {
+                const workoutResponse = await fetch('https:yantraprise.com/workoutplan', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -208,7 +250,14 @@ export default function Calories() {
                 workoutPlan: workoutText
             });
 
-            router.push('/schedule');
+            // Check if we need to ask for profile save
+            const needsUpdate = await checkDraftProfile();
+            if (needsUpdate) {
+                setLoading(false);
+                setIsSaveModalOpen(true);
+            } else {
+                router.push('/schedule');
+            }
         } catch (err) {
             console.error("Plan generation error:", err);
             setError(err instanceof Error ? err.message : "Generation failed");
@@ -271,14 +320,22 @@ export default function Calories() {
 
                         {error && (
                             <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl">
-                                <p className="text-xs text-red-500 font-bold uppercase tracking-widest mb-1">Error</p>
+                                <p className="text-xs text-red-500 font-bold uppercase tracking-widest mb-1">Unfeasible Goal</p>
                                 <p className="text-[13px] text-white/60 leading-relaxed">{error}</p>
-                                <button
-                                    onClick={() => window.location.reload()}
-                                    className="mt-3 text-[11px] font-black text-primary uppercase tracking-widest hover:underline"
-                                >
-                                    Try Again
-                                </button>
+                                <div className="flex gap-4 mt-4">
+                                    <button
+                                        onClick={() => router.push('/ai-coach/goal')}
+                                        className="text-[11px] font-black text-primary uppercase tracking-widest hover:underline"
+                                    >
+                                        Edit Goal
+                                    </button>
+                                    <button
+                                        onClick={() => window.location.reload()}
+                                        className="text-[11px] font-black text-white/40 uppercase tracking-widest hover:underline"
+                                    >
+                                        Try Again
+                                    </button>
+                                </div>
                             </div>
                         )}
 
@@ -359,6 +416,18 @@ export default function Calories() {
             </div>
 
             <BottomNavNew />
+
+            {/* Profile Update Modal */}
+            <AiCoachModal
+                isOpen={isSaveModalOpen}
+                onClose={() => router.push('/schedule')}
+                title="Save to profile?"
+                description="You've entered new details. Would you like to update your profile with this information?"
+                confirmText="Update profile"
+                cancelText="Skip"
+                onConfirm={handleSaveToProfile}
+                onCancel={() => router.push('/schedule')}
+            />
         </div>
     );
 }

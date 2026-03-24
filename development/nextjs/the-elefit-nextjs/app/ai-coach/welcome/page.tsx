@@ -64,7 +64,7 @@ export default function Welcome() {
                                     <span className="text-2xl">🏋🏻</span>
                                 </div>
                                 <div className="flex-1 space-y-0.5">
-                                    <h3 className="text-sm font-black text-white tracking-wide">My fitness plan</h3>
+                                    <h3 className="text-sm font-black text-white tracking-wide">My fitness plans</h3>
                                     <p className="text-[11px] font-bold text-white/40">View your personalized schedule</p>
                                 </div>
                                 <div className="h-6 w-6 flex items-center justify-center text-white/30 group-hover:text-white transition-colors">

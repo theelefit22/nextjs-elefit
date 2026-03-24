@@ -5,9 +5,11 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import BottomNavNew from '@/components/BottomNavNew';
 import { useAiCoach } from '@/contexts/AiCoachContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function Details() {
     const router = useRouter();
+    const { user } = useAuth();
     const { data, updateData } = useAiCoach();
     const [mounted, setMounted] = useState(false);
     const [formData, setFormData] = useState({
@@ -26,10 +28,18 @@ export default function Details() {
         return () => cancelAnimationFrame(t);
     }, []);
 
+    const isFormValid = formData.name?.trim() !== '' &&
+        formData.age?.trim() !== '' &&
+        formData.height?.trim() !== '' &&
+        formData.currentWeight?.trim() !== '' &&
+        formData.targetWeight?.trim() !== '';
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        updateData(formData);
-        router.push('/ai-coach/preferences');
+        if (isFormValid) {
+            updateData(formData);
+            router.push('/ai-coach/preferences');
+        }
     };
 
     return (
@@ -215,7 +225,11 @@ export default function Details() {
 
                             <button
                                 type="submit"
-                                className="w-full py-4 bg-primary text-black font-black text-sm rounded-full shadow-[0_4px_15px_rgba(204,216,83,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all"
+                                disabled={!isFormValid}
+                                className={`w-full py-4 rounded-full font-black text-sm transition-all shadow-[0_4px_15px_rgba(204,216,83,0.3)] ${isFormValid
+                                        ? 'bg-primary text-black hover:scale-[1.02] active:scale-[0.98]'
+                                        : 'bg-primary/20 text-black/40 cursor-not-allowed opacity-50'
+                                    }`}
                             >
                                 Continue
                             </button>

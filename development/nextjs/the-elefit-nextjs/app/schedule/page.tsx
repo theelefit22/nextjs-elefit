@@ -577,6 +577,7 @@ function ScheduleContent() {
                                                         const workoutPlanRaw = data.workoutPlan || localStorage.getItem('generated_workout_plan_raw');
 
                                                         await saveUserPlan(user.uid, planName, {
+                                                            goal: data.prompt,
                                                             mealPlan: mealPlanRaw,
                                                             workoutPlan: workoutPlanRaw,
                                                             calculatedData: data.calculatedData,

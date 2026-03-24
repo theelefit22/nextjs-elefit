@@ -5,11 +5,19 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import BottomNavNew from '@/components/BottomNavNew';
 import { useAiCoach } from '@/contexts/AiCoachContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { getUserProfile } from '@/shared/firebase';
+import { AiCoachModal } from '@/components/AiCoachModal';
+import { extractSpecsFromPrompt } from '@/lib/ai-coach-parser';
 
 export default function Goal() {
     const { data, updateData } = useAiCoach();
+    const { user } = useAuth();
     const [goal, setGoal] = useState(data.prompt);
     const [mounted, setMounted] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [profileData, setProfileData] = useState<any>(null);
+    const [loading, setLoading] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
@@ -17,12 +25,64 @@ export default function Goal() {
         return () => cancelAnimationFrame(t);
     }, []);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (goal.trim()) {
-            updateData({ prompt: goal.trim() });
-            router.push('/ai-coach/details');
+        if (!goal.trim() || loading) return;
+
+        setLoading(true);
+        updateData({ prompt: goal.trim() });
+
+        // 1. Extract specs from prompt locally
+        const extracted = extractSpecsFromPrompt(goal.trim());
+        console.log("Extracted from prompt (local):", extracted);
+
+        if (Object.keys(extracted).length > 0) {
+            updateData(extracted);
         }
+
+        // 2. Check profile for pre-fill
+        if (user?.uid) {
+            try {
+                const profile = await getUserProfile(user.uid);
+                console.log("Profile fetched on Goal page:", profile);
+
+                if (profile) {
+                    setProfileData(profile);
+                    setIsModalOpen(true);
+                    setLoading(false);
+                    return;
+                }
+            } catch (error) {
+                console.error("Error fetching profile for pre-fill:", error);
+            }
+        }
+
+        setLoading(false);
+        router.push('/ai-coach/details');
+    };
+
+    const handlePreFill = () => {
+        if (!profileData) return;
+
+        const newDetails = {
+            name: profileData.name || `${profileData.firstName || ''} ${profileData.lastName || ''}`.trim() || data.name,
+            age: profileData.age?.toString() || data.age,
+            height: profileData.height?.toString() || data.height,
+            currentWeight: profileData.weight?.toString() || data.currentWeight,
+            targetWeight: profileData.targetWeight?.toString() || data.targetWeight,
+            gender: (profileData.gender === 'male' || profileData.gender === 'female' ? profileData.gender : data.gender) as any,
+        };
+
+        // Also pre-fill preferences in context if available
+        updateData({
+            ...newDetails,
+            activityLevel: profileData.activityLevel || data.activityLevel,
+            dietaryText: (profileData.dietaryRestrictions || profileData.allergies || profileData.healthGoals)
+                ? [profileData.dietaryRestrictions, profileData.allergies, profileData.healthGoals].filter(Boolean).join('. ')
+                : data.dietaryText
+        });
+
+        router.push('/ai-coach/details');
     };
 
     return (
@@ -90,10 +150,10 @@ export default function Goal() {
 
                             <button
                                 type="submit"
-                                disabled={!goal.trim()}
+                                disabled={!goal.trim() || loading}
                                 className="w-full py-4 bg-primary text-black font-black text-sm rounded-full shadow-[0_4px_15_rgba(204,216,83,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:scale-100"
                             >
-                                Create my plan
+                                {loading ? 'Analyzing goal...' : 'Create my plan'}
                             </button>
                         </form>
                     </div>
@@ -101,6 +161,18 @@ export default function Goal() {
             </div>
 
             <BottomNavNew />
+
+            {/* Profile Pre-fill Modal */}
+            <AiCoachModal
+                isOpen={isModalOpen}
+                onClose={() => router.push('/ai-coach/details')}
+                title="Use Existing Profile?"
+                description="We found your fitness details in your profile. Would you like to use them to pre-fill your plan details?"
+                confirmText="Use My Profile"
+                cancelText="Fill Manually"
+                onConfirm={handlePreFill}
+                onCancel={() => router.push('/ai-coach/details')}
+            />
         </div>
     );
 }

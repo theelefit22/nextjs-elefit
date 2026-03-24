@@ -149,3 +149,56 @@ export function parseWorkoutPlan(text: string): WeeklyWorkouts {
 
     return weeklyWorkouts;
 }
+
+export function extractSpecsFromPrompt(prompt: string) {
+    const p = prompt.toLowerCase();
+    const specs: any = {};
+
+    // Age
+    const ageMatch = p.match(/(\d+)\s*(?:years?|y(?:\.o\.)?|yrs?|age)/i) || p.match(/(?:i'm|i am|age|is)\s*(\d+)/i);
+    if (ageMatch) specs.age = ageMatch[1];
+
+    // Height
+    const heightMatch = p.match(/(\d+)\s*(?:cm|cms|centimeters?)/i);
+    if (heightMatch) {
+        specs.height = heightMatch[1];
+    } else {
+        const mMatch = p.match(/(\d\.\d+)\s*(?:m|meters?)/i);
+        if (mMatch) specs.height = Math.round(parseFloat(mMatch[1]) * 100).toString();
+    }
+
+    // Weight
+    const weightMatch = p.match(/(\d+(?:\.\d+)?)\s*(?:kg|kgs|kilograms?|weight)/i) || p.match(/(?:weight|i weigh|currently)\s*(?:is|at\s*)?(\d+(?:\.\d+)?)/i);
+    if (weightMatch) specs.currentWeight = weightMatch[1];
+
+    // Target Weight
+    const targetMatch = p.match(/(?:target|reach|to|goal)\s*(?:weight\s*)?(?:is\s*)?(\d+(?:\.\d+)?)\s*(?:kg|kgs)?/i);
+    if (targetMatch) {
+        specs.targetWeight = targetMatch[1];
+    } else {
+        // Handle "lose X kg"
+        const loseMatch = p.match(/(?:lose|shed|drop|reduce)\s*(\d+(?:\.\d+)?)\s*(?:kg|kgs)?/i);
+        if (loseMatch && specs.currentWeight) {
+            specs.targetWeight = (parseFloat(specs.currentWeight) - parseFloat(loseMatch[1])).toString();
+        }
+        // Handle "gain X kg"
+        const gainMatch = p.match(/(?:gain|add|put on)\s*(\d+(?:\.\d+)?)\s*(?:kg|kgs)?/i);
+        if (gainMatch && specs.currentWeight) {
+            specs.targetWeight = (parseFloat(specs.currentWeight) + parseFloat(gainMatch[1])).toString();
+        }
+    }
+
+    // Gender
+    if (/\b(male|man|boy|gentleman)\b/i.test(p)) specs.gender = 'male';
+    else if (/\b(female|woman|girl|lady)\b/i.test(p)) specs.gender = 'female';
+
+    // Timeline
+    const timelineMatch = p.match(/(\d+)\s*(weeks?|months?|wks?|mos?)/i);
+    if (timelineMatch) {
+        specs.timelineValue = timelineMatch[1];
+        const unit = timelineMatch[2].toLowerCase();
+        specs.timelineUnit = (unit.startsWith('w')) ? 'weeks' : 'months';
+    }
+
+    return specs;
+}
