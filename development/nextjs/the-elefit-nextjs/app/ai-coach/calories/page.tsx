@@ -96,7 +96,7 @@ export default function Calories() {
 
                 console.log("Fetching targets with data:", data);
 
-                const response = await fetch('https://backend-aicoach.onrender.com/user', {
+                const response = await fetch('https://yantraprise.com/user', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -149,6 +149,12 @@ export default function Calories() {
                 console.error("Error fetching targets:", err);
                 setError(err instanceof Error ? err.message : "Calculation failed");
                 setLoading(false);
+                setCalorieData({
+                    dailyCalories: 0,
+                    proteinGrams: 0,
+                    carbsGrams: 0,
+                    fatGrams: 0
+                });
             }
         };
 
@@ -186,7 +192,7 @@ export default function Calories() {
 
             // 1. Generate Meal Plan (Conditional)
             if (data.helpType === 'meal' || data.helpType === 'both') {
-                const mealResponse = await fetch('https://backend-aicoach.onrender.com/mealplan', {
+                const mealResponse = await fetch('https://yantraprise.com/mealplan', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -215,7 +221,7 @@ export default function Calories() {
 
             // 2. Generate Workout Plan (Conditional)
             if (data.helpType === 'workout' || data.helpType === 'both') {
-                const workoutResponse = await fetch('https://backend-aicoach.onrender.com/workoutplan', {
+                const workoutResponse = await fetch('https://yantraprise.com/workoutplan', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -405,7 +411,8 @@ export default function Calories() {
 
                                 <button
                                     onClick={handleContinue}
-                                    className="w-full py-4 bg-primary text-black font-black text-sm rounded-full shadow-[0_4px_15px_rgba(204,216,83,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all"
+                                    disabled={!!error || loading || calorieData.dailyCalories === 0}
+                                    className="w-full py-4 bg-primary text-black font-black text-sm rounded-full shadow-[0_4px_15px_rgba(204,216,83,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-20 disabled:grayscale disabled:scale-100 disabled:cursor-not-allowed"
                                 >
                                     Generate my plan
                                 </button>
