@@ -127,7 +127,7 @@ export default function Welcome() {
                 {/* Backdrop overlay within centered container */}
                 <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={closeDrawer} />
 
-                <div className={`relative w-full md:max-w-md bg-[#111] rounded-t-[32px] md:rounded-[40px] border-t md:border border-white/10 px-6 pt-2 pb-8 h-auto max-h-[85vh] transition-transform duration-500 ease-out flex flex-col ${activeDrawer ? 'translate-y-0' : 'translate-y-full'}`}>
+                <div className={`relative w-full md:max-w-md bg-[#111] rounded-t-[32px] md:rounded-[40px] border-t md:border border-white/10 px-6 pt-2 pb-32 md:pb-8 h-auto max-h-[85vh] transition-transform duration-500 ease-out flex flex-col ${activeDrawer ? 'translate-y-0' : 'translate-y-full'}`}>
                     {/* Drag Handle Area */}
                     <div className="w-full pt-2 pb-4 flex justify-center">
                         <div className="w-12 h-1 bg-white/20 rounded-full" />
