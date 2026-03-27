@@ -305,7 +305,7 @@ function ProfileContent() {
                             className={`flex items-center gap-2 py-4 px-8 border-b-2 transition-all ${activeTab === 'schedules' ? 'border-[#ccd853] text-[#ccd853]' : 'border-transparent text-[#828282] hover:text-white'}`}
                         >
                             <Download className="w-4 h-4" />
-                            <span className="text-xs font-bold uppercase tracking-widest">Saved Schedules</span>
+                            <span className="text-xs font-bold uppercase tracking-widest">My Favorite Plans</span>
                         </button>
                     </div>
 
@@ -517,7 +517,7 @@ function ProfileContent() {
                         ) : (
                             <div className="space-y-6">
                                 <div className="flex items-center justify-between mb-8">
-                                    <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-[#eeeeee]">Previous Schedules</h3>
+                                    <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-[#eeeeee]">My Fitness Plans</h3>
                                     {savedPlans.length > 0 && (
                                         <span className="text-[10px] font-bold text-[#828282] uppercase tracking-wider bg-[#212121] px-3 py-1 rounded-full">
                                             {savedPlans.length} Total
@@ -546,14 +546,17 @@ function ProfileContent() {
                                                     </span>
                                                 </div>
                                                 <h4 className="font-bold text-white group-hover:text-primary transition-colors line-clamp-1">{plan.name}</h4>
-                                                <p className="text-[10px] text-[#828282] mt-1 font-medium flex items-center gap-1.5 uppercase tracking-wider">
-                                                    Created {new Date(plan.createdAt?.seconds * 1000).toLocaleDateString()}
+                                                <p className="text-[11px] text-[#828282] mt-2 font-medium line-clamp-2 italic">
+                                                    "{plan.goal || 'No goal specified'}"
                                                 </p>
-                                                <div className="mt-6 flex items-center justify-between">
-                                                    <span className="text-[10px] font-bold text-[#828282]">{plan.calculatedData?.workoutFocus || 'GENERAL'}</span>
-                                                    <span className="text-[10px] font-bold text-primary flex items-center gap-1">
-                                                        VIEW PLAN <ChevronLeft className="w-3 h-3 rotate-180" />
-                                                    </span>
+                                                <p className="text-[10px] text-primary/60 mt-4 font-black flex items-center gap-1.5 uppercase tracking-wider">
+                                                    Generated on {new Date(plan.createdAt?.seconds * 1000).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                </p>
+                                                <div className="mt-6 pt-4 border-t border-[#212121] flex items-center justify-between">
+                                                    <span className="text-[10px] font-bold text-[#828282] uppercase tracking-widest">{plan.calculatedData?.workoutFocus || 'GENERAL'}</span>
+                                                    <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary transition-all">
+                                                        <ChevronLeft className="w-3 h-3 rotate-180 text-primary group-hover:text-black" />
+                                                    </div>
                                                 </div>
                                             </div>
                                         ))}

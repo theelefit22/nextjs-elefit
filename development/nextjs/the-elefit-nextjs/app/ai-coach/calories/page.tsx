@@ -6,7 +6,7 @@ import { ArrowLeft } from 'lucide-react';
 import BottomNavNew from '@/components/BottomNavNew';
 import { useAiCoach } from '@/contexts/AiCoachContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { decrementCredits, getUserProfile, updateUserProfile } from '@/shared/firebase';
+import { decrementCredits, getUserProfile, updateUserProfile, saveUserPlan } from '@/shared/firebase';
 import { AiCoachModal } from '@/components/AiCoachModal';
 
 export default function Calories() {
@@ -255,6 +255,30 @@ export default function Calories() {
                 mealPlan: mealText,
                 workoutPlan: workoutText
             });
+
+            // 4. Auto-save to Firestore
+            try {
+                const planName = `Fitness Plan - ${new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}`;
+                await saveUserPlan(user.uid, planName, {
+                    goal: data.prompt,
+                    mealPlan: mealText,
+                    workoutPlan: workoutText,
+                    calculatedData: {
+                        tdee: data.calculatedData?.tdee,
+                        targetCalories: data.calculatedData?.targetCalories,
+                        proteinGrams: data.calculatedData?.proteinGrams,
+                        carbsGrams: data.calculatedData?.carbsGrams,
+                        fatGrams: data.calculatedData?.fatGrams,
+                        workoutFocus: data.calculatedData?.workoutFocus,
+                        capped: data.calculatedData?.capped
+                    },
+                    planGenerationDate: new Date().toISOString()
+                });
+                console.log("Plan auto-saved successfully");
+            } catch (saveError) {
+                console.error("Auto-save failed:", saveError);
+                // We don't block the user if auto-save fails, but we log it
+            }
 
             // Check if we need to ask for profile save
             const needsUpdate = await checkDraftProfile();

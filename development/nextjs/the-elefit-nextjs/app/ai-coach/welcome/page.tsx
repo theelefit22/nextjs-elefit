@@ -4,13 +4,18 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { getUserPlans, getCurrentUser } from '@/shared/firebase';
 import BottomNavNew from '@/components/BottomNavNew';
 import MobileNavDrawer from '@/components/MobileNavDrawer';
+import { useEffect } from 'react';
+import { ChevronRight, Calendar, Sparkles } from 'lucide-react';
 
 export default function Welcome() {
     const router = useRouter();
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, user } = useAuth();
     const [activeDrawer, setActiveDrawer] = useState<'continue' | 'new' | null>(null);
+    const [savedPlans, setSavedPlans] = useState<any[]>([]);
+    const [loadingPlans, setLoadingPlans] = useState(false);
 
     const closeDrawer = () => setActiveDrawer(null);
 
@@ -21,6 +26,23 @@ export default function Welcome() {
         }
         action();
     };
+
+    useEffect(() => {
+        if (isAuthenticated && user?.uid) {
+            const fetchPlans = async () => {
+                setLoadingPlans(true);
+                try {
+                    const plans = await getUserPlans(user.uid);
+                    setSavedPlans(plans);
+                } catch (error) {
+                    console.error("Error fetching plans:", error);
+                } finally {
+                    setLoadingPlans(false);
+                }
+            };
+            fetchPlans();
+        }
+    }, [isAuthenticated, user]);
 
     return (
         <div className="relative min-h-screen w-full bg-black overflow-hidden flex flex-col font-sans">
@@ -105,32 +127,77 @@ export default function Welcome() {
                 {/* Backdrop overlay within centered container */}
                 <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={closeDrawer} />
 
-                <div className={`relative w-full md:max-w-md bg-[#111] rounded-t-[40px] md:rounded-[40px] border-t md:border border-white/10 px-6 pt-2 pb-32 md:pb-12 h-[50vh] md:h-auto transition-transform duration-500 ease-out ${activeDrawer ? 'translate-y-0' : 'translate-y-full'}`}>
+                <div className={`relative w-full md:max-w-md bg-[#111] rounded-t-[32px] md:rounded-[40px] border-t md:border border-white/10 px-6 pt-2 pb-8 h-auto max-h-[85vh] transition-transform duration-500 ease-out flex flex-col ${activeDrawer ? 'translate-y-0' : 'translate-y-full'}`}>
                     {/* Drag Handle Area */}
-                    <div className="w-full pt-2 pb-6 flex justify-center">
+                    <div className="w-full pt-2 pb-4 flex justify-center">
                         <div className="w-12 h-1 bg-white/20 rounded-full" />
                     </div>
 
                     {/* Drawer Content */}
-                    <div className="pb-12">
+                    <div className="pb-4 flex-1 overflow-hidden flex flex-col">
                         {activeDrawer === 'continue' && (
-                            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                <div className="space-y-3">
-                                    <h2 className="text-[22px] font-black text-white tracking-tight">Continue your journey?</h2>
+                            <div className="space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col flex-1 min-h-0">
+                                <div className="space-y-2">
+                                    <h2 className="text-[22px] font-black text-white tracking-tight">Your Fitness Plans</h2>
                                     <p className="text-sm font-medium text-white/40 leading-relaxed">
-                                        Would you like to view your current plan or change your fitness goal?
+                                        Select a plan to continue your journey or view your progress.
                                     </p>
                                 </div>
 
-                                <div className="space-y-4 pt-4">
+                                <div className="flex-1 overflow-y-auto pr-2 space-y-3 custom-scrollbar min-h-0">
+                                    {loadingPlans ? (
+                                        <div className="py-20 flex flex-col items-center justify-center gap-4">
+                                            <div className="h-8 w-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                                            <p className="text-xs font-bold text-white/40 uppercase tracking-widest">Loading your plans...</p>
+                                        </div>
+                                    ) : savedPlans.length > 0 ? (
+                                        savedPlans.map((plan) => (
+                                            <button
+                                                key={plan.id}
+                                                onClick={() => router.push(`/schedule?planId=${plan.id}`)}
+                                                className="w-full text-left group bg-white/5 border border-white/10 p-5 rounded-3xl hover:border-primary/50 transition-all active:scale-[0.98]"
+                                            >
+                                                <div className="flex items-start justify-between gap-4">
+                                                    <div className="space-y-2 flex-1">
+                                                        <div className="flex items-center gap-2">
+                                                            <Calendar className="w-3.5 h-3.5 text-primary" />
+                                                            <span className="text-[10px] font-black text-primary uppercase tracking-[0.15em]">
+                                                                {new Date(plan.createdAt?.seconds * 1000).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                            </span>
+                                                        </div>
+                                                        <h4 className="text-sm font-black text-white line-clamp-1 group-hover:text-primary transition-colors">{plan.name}</h4>
+                                                        <p className="text-[11px] font-medium text-white/40 line-clamp-2 italic leading-relaxed">
+                                                            "{plan.goal || 'No goal specified'}"
+                                                        </p>
+                                                    </div>
+                                                    <div className="h-8 w-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-primary transition-all">
+                                                        <ChevronRight className="w-4 h-4 text-white group-hover:text-black" />
+                                                    </div>
+                                                </div>
+                                            </button>
+                                        ))
+                                    ) : (
+                                        <div className="py-16 text-center space-y-4">
+                                            <div className="h-16 w-16 bg-white/5 rounded-full flex items-center justify-center mx-auto border border-white/10">
+                                                <Sparkles className="w-8 h-8 text-white/10" />
+                                            </div>
+                                            <p className="text-sm font-medium text-white/40">You haven't generated any plans yet.</p>
+                                            <button
+                                                onClick={() => router.push('/ai-coach/goal')}
+                                                className="px-6 py-2 bg-primary/10 border border-primary/20 text-primary rounded-full text-xs font-black uppercase tracking-widest"
+                                            >
+                                                Create your first plan
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="pt-4 border-t border-white/10">
                                     <button
-                                        onClick={() => router.push('/schedule')}
-                                        className="w-full py-4 bg-primary text-black font-black text-sm rounded-full shadow-[0_4px_15_rgba(204,216,83,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all"
+                                        onClick={() => router.push('/ai-coach/goal')}
+                                        className="w-full py-4 text-primary font-black text-sm hover:underline"
                                     >
-                                        Continue with current plan
-                                    </button>
-                                    <button className="w-full py-2 text-primary font-bold text-sm hover:underline">
-                                        Change fitness goal
+                                        + Start a fresh new plan
                                     </button>
                                 </div>
                             </div>

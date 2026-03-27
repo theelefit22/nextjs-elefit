@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, ChevronRight, ChevronDown, Download, ThumbsUp, ThumbsDown, ArrowLeft, Bookmark } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, Download, ThumbsUp, ThumbsDown, ArrowLeft, Heart } from 'lucide-react';
 import BottomNavNew from '@/components/BottomNavNew';
 import { Header } from '@/components/Header';
 import MobileNavDrawer from '@/components/MobileNavDrawer';
@@ -73,15 +73,6 @@ function ScheduleContent() {
         }
     }, []);
 
-    // Timer for Save/Edit Drawer (2 minutes)
-    useEffect(() => {
-        if (!planId && !isPlanSaved) {
-            const timer = setTimeout(() => {
-                setIsSaveEditDrawerOpen(true);
-            }, 120000); // 2 minutes
-            return () => clearTimeout(timer);
-        }
-    }, [planId, isPlanSaved]);
 
     // Fetch plan if planId is present
     useEffect(() => {
@@ -225,13 +216,13 @@ function ScheduleContent() {
                                 <Download className="h-5 w-5 group-hover:translate-y-0.5 transition-transform" />
                             </button>
 
-                            {/* Bookmark Button */}
+                            {/* Heart (Favorite) Button */}
                             <button
-                                onClick={() => setIsSaveEditDrawerOpen(true)}
+                                onClick={() => setIsSaveModalOpen(true)}
                                 className="h-10 w-10 flex items-center justify-center rounded-full bg-white/5 text-white hover:bg-white/10 transition-all border border-white/10 active:scale-95 group"
-                                title="Save/Edit Plan"
+                                title="Add to Favorites"
                             >
-                                <Bookmark className="h-5 w-5 group-hover:fill-primary group-hover:text-primary transition-colors" />
+                                <Heart className="h-5 w-5 group-hover:fill-primary group-hover:text-primary transition-colors" />
                             </button>
                         </div>
                     </div>
@@ -499,58 +490,17 @@ function ScheduleContent() {
                     </div>
                 </div>
 
-                {/* Bottom Drawer (Save/Edit Plan) */}
-                <div className={`fixed inset-0 z-50 flex items-end md:items-center justify-center transition-opacity duration-300 ${isSaveEditDrawerOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                    {/* Backdrop overlay */}
-                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsSaveEditDrawerOpen(false)} />
-
-                    <div className={`relative w-full md:max-w-md bg-[#111] rounded-t-[40px] md:rounded-[40px] border-t md:border border-white/10 px-6 pt-2 pb-32 md:pb-12 h-auto transition-transform duration-500 ease-out ${isSaveEditDrawerOpen ? 'translate-y-0' : 'translate-y-full'}`}>
-                        {/* Drag Handle Area */}
-                        <div className="w-full pt-2 pb-6 flex justify-center">
-                            <div className="w-12 h-1 bg-white/20 rounded-full" />
-                        </div>
-
-                        {/* Drawer Content */}
-                        <div className="pb-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                            <div className="space-y-3">
-                                <h2 className="text-[22px] font-black text-white tracking-tight">You can save / edit this plan</h2>
-                                <p className="text-sm font-medium text-white/40 leading-relaxed">
-                                    Want to keep this for later or make some changes to your fitness goal?
-                                </p>
-                            </div>
-
-                            <div className="space-y-4 pt-4">
-                                <button
-                                    onClick={() => {
-                                        setIsSaveModalOpen(true);
-                                        setIsSaveEditDrawerOpen(false);
-                                    }}
-                                    className="w-full py-4 bg-primary text-black font-black text-sm rounded-full shadow-[0_4px_15_rgba(204,216,83,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all"
-                                >
-                                    Save Plan
-                                </button>
-                                <button
-                                    onClick={() => router.push('/ai-coach/goal')}
-                                    className="w-full py-2 text-primary font-bold text-sm hover:underline"
-                                >
-                                    Edit Plan
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Save Modal */}
+                {/* Save (Favorite) Modal */}
                 {
                     isSaveModalOpen && (
                         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
                             <div className="w-full max-w-sm rounded-[32px] border border-[#212121] bg-[#0c0c0c] p-8 shadow-2xl">
-                                <h3 className="text-lg font-bold text-white mb-2 text-center">Save with name</h3>
-                                <p className="text-xs text-[#898989] mb-6 text-center">Pick a name to find this later in your profile</p>
+                                <h3 className="text-lg font-bold text-white mb-2 text-center">Add To Favorites</h3>
+                                {/* <p className="text-xs text-[#898989] mb-6 text-center">Pick a name to find this in your Favorite Plans</p> */}
 
                                 <div className="space-y-4">
                                     <div className="space-y-1.5">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-[#454545] ml-1">Plan Name</label>
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-[#454545] ml-1">Pick a Name</label>
                                         <Input
                                             value={planName}
                                             onChange={(e) => setPlanName(e.target.value)}
@@ -585,10 +535,9 @@ function ScheduleContent() {
                                                         });
                                                         setIsSaveModalOpen(false);
                                                         setIsPlanSaved(true);
-                                                        // Success toast would go here
-                                                        alert('Plan saved successfully!');
+                                                        alert('Plan favorited successfully!');
                                                     } catch (e) {
-                                                        alert('Failed to save plan');
+                                                        alert('Failed to favorite plan');
                                                     } finally {
                                                         setIsSaving(false);
                                                     }
@@ -597,7 +546,7 @@ function ScheduleContent() {
                                             disabled={isSaving}
                                             className="flex-1 bg-primary text-black hover:bg-primary/90 h-12 rounded-2xl font-bold"
                                         >
-                                            {isSaving ? 'Saving...' : 'Save'}
+                                            {isSaving ? 'Favoriting...' : 'Save'}
                                         </Button>
                                     </div>
                                 </div>
