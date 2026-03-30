@@ -168,7 +168,7 @@ export default function Calories() {
                 return;
             }
 
-            if (!user.emailVerified && !user.otpVerified) {
+            if (!user.emailVerified && !user.otpVerified && !user.isEmailVerified) {
                 setError("Please verify your email before generating a plan. Check your inbox for the verification code!");
                 return;
             }

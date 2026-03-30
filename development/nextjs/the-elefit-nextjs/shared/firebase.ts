@@ -238,6 +238,7 @@ export const signupUser = async (
       createdAt: new Date(),
       credits: 0, // Initialize with 0, will set to 10 after OTP verification
       otpVerified: false,
+      isEmailVerified: false,
       profileImageUrl: null,
       phoneVerified: false,
       phone: null,
@@ -356,6 +357,7 @@ export const verifySignupOTP = async (uid: string, code: string) => {
 
     const updateData: any = {
       otpVerified: true,
+      isEmailVerified: true,
       updatedAt: serverTimestamp(),
     };
 
@@ -489,6 +491,7 @@ export const mapShopifyUserToFirebase = async (
         shopifyCustomerId: normalizedCustomerId,
         shopifyMapped: true,
         otpVerified: false, // Now required to verify even if from Shopify
+        isEmailVerified: false,
         credits: 0,         // Wait for OTP verification to give 10 credits
         createdAt: new Date(),
         profileImageUrl: null,
@@ -659,7 +662,7 @@ export const authenticateCustomer = async (customerObject: { email: string; cust
 
       // Check if verified, if not trigger OTP
       const profile = await getUserProfile(userCredential.user.uid);
-      if (profile && !profile.otpVerified) {
+      if (profile && !profile.otpVerified && !profile.isEmailVerified) {
         console.log("⚠️ Bridge login user unverified, triggering OTP...");
         await triggerOTPVerification(normalizedEmail, userCredential.user.uid);
       }
@@ -687,7 +690,8 @@ export const authenticateCustomer = async (customerObject: { email: string; cust
         uid: uid,
         email: normalizedEmail,
         shopifyCustomerId: customerId,
-        otpVerified: profile?.otpVerified || false,
+        otpVerified: profile?.otpVerified || profile?.isEmailVerified || false,
+        isEmailVerified: profile?.isEmailVerified || profile?.otpVerified || false,
         credits: profile?.credits || 0,
         message: "Customer verified via Shopify"
       };

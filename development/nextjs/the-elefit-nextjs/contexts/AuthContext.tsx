@@ -16,6 +16,7 @@ export interface AuthUser extends User {
   shopifyCustomerId?: string | null;
   credits?: number;
   otpVerified?: boolean;
+  isEmailVerified?: boolean;
 }
 
 export interface AuthContextType {
@@ -75,6 +76,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 shopifyCustomerId: sessionData.customerId,
                 shopifyMapped: true,
                 credits: sessionData.credits || 0,
+                otpVerified: sessionData.otpVerified || sessionData.verified || false,
+                isEmailVerified: sessionData.isEmailVerified || sessionData.verified || false,
               } as AuthUser;
 
               setUser(mockUser);
@@ -103,6 +106,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           const profile = await getUserProfile(firebaseUser.uid);
           let currentCredits = profile?.credits || 0;
           let currentOtpVerified = profile?.otpVerified || false;
+          let currentIsEmailVerified = profile?.isEmailVerified || profile?.otpVerified || false;
 
           // LEGACY CREDIT GIFT: If user is verified but has 0 credits, grant 10
           if ((firebaseUser.emailVerified || currentOtpVerified) && (profile?.credits === undefined || profile?.credits === 0)) {
@@ -123,6 +127,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             shopifyCustomerId: profile?.shopifyCustomerId || null,
             credits: currentCredits,
             otpVerified: currentOtpVerified,
+            isEmailVerified: currentIsEmailVerified,
           } as AuthUser;
 
           setUser(freshUser);
@@ -138,6 +143,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               timestamp: Date.now(),
               credits: currentCredits,
               otpVerified: currentOtpVerified,
+              isEmailVerified: currentIsEmailVerified,
               userType: profile.userType
             }));
           }
@@ -167,6 +173,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       shopifyMapped: true,
       credits: sessionData.credits || 0,
       otpVerified: sessionData.otpVerified || false,
+      isEmailVerified: sessionData.isEmailVerified || sessionData.verified || false,
     } as AuthUser;
 
     setUser(mockUser);
@@ -178,13 +185,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (!user) return;
     try {
       const profile = await getUserProfile(user.uid);
-      const isOtpVerified = profile?.otpVerified || false;
+      const isOtpVerified = profile?.otpVerified || profile?.isEmailVerified || false;
+      const isEmailVerified = profile?.isEmailVerified || profile?.otpVerified || false;
       const credits = profile?.credits || 0;
 
       setUser(prev => prev ? {
         ...prev,
         ...profile,
         otpVerified: isOtpVerified,
+        isEmailVerified: isEmailVerified,
         credits: credits,
       } : null);
 
@@ -198,6 +207,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           timestamp: Date.now(),
           credits: credits,
           otpVerified: isOtpVerified,
+          isEmailVerified: isEmailVerified,
           userType: profile?.userType
         }));
       }
@@ -223,6 +233,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         shopifyCustomerId: profile?.shopifyCustomerId || null,
         credits: profile?.credits || 0,
         otpVerified: profile?.otpVerified || false,
+        isEmailVerified: profile?.isEmailVerified || profile?.otpVerified || false,
       } as AuthUser;
 
       setUser(authUser);
@@ -261,6 +272,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         userType: userTypeValue,
         credits: 0,
         otpVerified: false,
+        isEmailVerified: false,
       } as AuthUser;
 
       setUser(authUser);
