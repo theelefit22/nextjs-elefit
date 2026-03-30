@@ -673,7 +673,8 @@ export const authenticateCustomer = async (customerObject: { email: string; cust
         uid: userCredential.user.uid,
         email: normalizedEmail,
         shopifyCustomerId: customerId,
-        otpVerified: profile?.otpVerified || false,
+        otpVerified: profile?.otpVerified || profile?.isEmailVerified || false,
+        isEmailVerified: profile?.isEmailVerified || profile?.otpVerified || false,
         credits: profile?.credits || 0,
         message: "Customer logged in automatically via bridge"
       };

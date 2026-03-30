@@ -76,8 +76,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 shopifyCustomerId: sessionData.customerId,
                 shopifyMapped: true,
                 credits: sessionData.credits || 0,
-                otpVerified: sessionData.otpVerified || sessionData.verified || false,
-                isEmailVerified: sessionData.isEmailVerified || sessionData.verified || false,
+                otpVerified: !!sessionData.otpVerified,
+                isEmailVerified: !!sessionData.isEmailVerified,
               } as AuthUser;
 
               setUser(mockUser);
@@ -172,8 +172,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       shopifyCustomerId: sessionData.customerId,
       shopifyMapped: true,
       credits: sessionData.credits || 0,
-      otpVerified: sessionData.otpVerified || false,
-      isEmailVerified: sessionData.isEmailVerified || sessionData.verified || false,
+      otpVerified: !!sessionData.otpVerified,
+      isEmailVerified: !!sessionData.isEmailVerified,
     } as AuthUser;
 
     setUser(mockUser);
