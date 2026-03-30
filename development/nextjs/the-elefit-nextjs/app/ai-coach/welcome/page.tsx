@@ -8,7 +8,7 @@ import { getUserPlans, getCurrentUser } from '@/shared/firebase';
 import BottomNavNew from '@/components/BottomNavNew';
 import MobileNavDrawer from '@/components/MobileNavDrawer';
 import { useEffect } from 'react';
-import { ChevronRight, Calendar, Sparkles } from 'lucide-react';
+import { ChevronRight, Calendar, Sparkles, Mail } from 'lucide-react';
 
 export default function Welcome() {
     const router = useRouter();
@@ -65,6 +65,37 @@ export default function Welcome() {
             {/* Main Content */}
             <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-6 pt-32 md:pt-20 pb-32">
                 <div className="w-full max-w-md">
+                    {/* Verification Alert (For Unverified Redirects) */}
+                    {isAuthenticated && user && !user.emailVerified && !user.otpVerified && !user.isEmailVerified && (
+                        <div className="mb-8 p-5 bg-red-500/10 border border-red-500/20 rounded-[24px] backdrop-blur-xl animate-in fade-in slide-in-from-top-4 duration-500">
+                            <div className="flex flex-col gap-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-10 w-10 flex items-center justify-center bg-red-500/20 rounded-full">
+                                        <Mail className="w-5 h-5 text-red-500" />
+                                    </div>
+                                    <div>
+                                        <h4 className="text-sm font-black text-white tracking-tight">Account not verified</h4>
+                                        <p className="text-[11px] font-bold text-white/40">Verify your email to getting 10 free credits!</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={async () => {
+                                        try {
+                                            const { triggerOTPVerification } = await import('@/shared/firebase');
+                                            await triggerOTPVerification(user.email!, user.uid);
+                                            router.push('/auth?isSignUp=true&message=Verification+code+sent!&verified=false');
+                                        } catch (e: any) {
+                                            console.error("Verification error:", e);
+                                        }
+                                    }}
+                                    className="w-full py-3 bg-red-500 text-white font-black text-[11px] uppercase tracking-widest rounded-xl hover:bg-red-600 transition-colors active:scale-[0.98]"
+                                >
+                                    Verify Now
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Header */}
                     <div className="space-y-2 mb-10 md:text-center">
                         <h1 className="text-[28px] leading-tight font-black text-white tracking-tight flex items-center justify-center md:justify-center gap-2">
