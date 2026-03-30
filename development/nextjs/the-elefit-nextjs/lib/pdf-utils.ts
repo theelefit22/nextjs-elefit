@@ -101,7 +101,6 @@ export const generatePlanPDF = (data: PDFData) => {
                         item.name,
                         item.quantity,
                         `${item.calories} kcal`,
-                        item.macro,
                         time
                     ]);
                 });
@@ -132,8 +131,8 @@ export const generatePlanPDF = (data: PDFData) => {
                 autoTable(doc, {
                     startY: currentY,
                     margin: { left: 15, right: 15 },
-                    head: [['MEAL', 'FOOD ITEM', 'QUANTITY', 'CALORIES', 'MACROS']],
-                    body: tableBody.map(row => row.slice(0, 5)),
+                    head: [['MEAL', 'FOOD ITEM', 'QUANTITY', 'CALORIES']],
+                    body: tableBody.map(row => row.slice(0, 4)),
                     theme: 'grid',
                     headStyles: {
                         fillColor: [20, 20, 20],
@@ -151,15 +150,14 @@ export const generatePlanPDF = (data: PDFData) => {
                         lineColor: [220, 220, 220]
                     },
                     columnStyles: {
-                        0: { cellWidth: 35, halign: 'center' },
+                        0: { cellWidth: 40, halign: 'center' },
                         1: { fontStyle: 'bold' },
-                        2: { cellWidth: 45, halign: 'center' },
-                        3: { cellWidth: 35, halign: 'center' },
-                        4: { cellWidth: 35, halign: 'center' }
+                        2: { cellWidth: 55, halign: 'center' },
+                        3: { cellWidth: 45, halign: 'center' }
                     },
                     didParseCell: (data) => {
                         if (data.section === 'body') {
-                            const time = tableBody[data.row.index][5];
+                            const time = tableBody[data.row.index][4];
                             if (mealRowBgColors[time]) {
                                 data.cell.styles.fillColor = mealRowBgColors[time];
                             }
