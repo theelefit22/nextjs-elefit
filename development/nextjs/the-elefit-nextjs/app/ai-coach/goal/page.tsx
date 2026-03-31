@@ -37,6 +37,14 @@ export default function Goal() {
         console.log("Extracted from prompt (local):", extracted);
 
         if (Object.keys(extracted).length > 0) {
+            // Handle relative weight even for manual fill if current weight was provided in prompt
+            if (!extracted.targetWeight && extracted.currentWeight) {
+                if (extracted.weightToLose) {
+                    extracted.targetWeight = (parseFloat(extracted.currentWeight) - extracted.weightToLose).toString();
+                } else if (extracted.weightToGain) {
+                    extracted.targetWeight = (parseFloat(extracted.currentWeight) + extracted.weightToGain).toString();
+                }
+            }
             updateData(extracted);
         }
 
@@ -64,7 +72,11 @@ export default function Goal() {
     const handlePreFill = () => {
         if (!profileData) return;
 
-        const newDetails = {
+        // 1. Re-extract to ensure we have the latest goal context
+        const extracted = extractSpecsFromPrompt(goal.trim());
+
+        // 2. Base data from Profile
+        const baseDetails = {
             name: profileData.name || `${profileData.firstName || ''} ${profileData.lastName || ''}`.trim() || data.name,
             age: profileData.age?.toString() || data.age,
             height: profileData.height?.toString() || data.height,
@@ -73,9 +85,30 @@ export default function Goal() {
             gender: (profileData.gender === 'male' || profileData.gender === 'female' ? profileData.gender : data.gender) as any,
         };
 
-        // Also pre-fill preferences in context if available
+        // 3. Override with Extracted Specs from Prompt (Prompt takes priority)
+        const mergedDetails = { ...baseDetails };
+        if (extracted.age) mergedDetails.age = extracted.age;
+        if (extracted.height) mergedDetails.height = extracted.height;
+        if (extracted.currentWeight) mergedDetails.currentWeight = extracted.currentWeight;
+        if (extracted.gender) mergedDetails.gender = extracted.gender;
+        if (extracted.timelineValue) {
+            (mergedDetails as any).timelineValue = extracted.timelineValue;
+            (mergedDetails as any).timelineUnit = extracted.timelineUnit;
+        }
+
+        // 4. Handle Relative Weight Logic (e.g., "lose 5kg")
+        // Target weight calculation: Current - Lose OR Current + Gain
+        if (extracted.targetWeight) {
+            mergedDetails.targetWeight = extracted.targetWeight;
+        } else if (extracted.weightToLose && mergedDetails.currentWeight) {
+            mergedDetails.targetWeight = (parseFloat(mergedDetails.currentWeight) - extracted.weightToLose).toString();
+        } else if (extracted.weightToGain && mergedDetails.currentWeight) {
+            mergedDetails.targetWeight = (parseFloat(mergedDetails.currentWeight) + extracted.weightToGain).toString();
+        }
+
+        // 5. Update Context and Redirect
         updateData({
-            ...newDetails,
+            ...mergedDetails,
             activityLevel: profileData.activityLevel || data.activityLevel,
             dietaryText: (profileData.dietaryRestrictions || profileData.allergies || profileData.healthGoals)
                 ? [profileData.dietaryRestrictions, profileData.allergies, profileData.healthGoals].filter(Boolean).join('. ')
