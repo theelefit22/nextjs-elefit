@@ -102,7 +102,7 @@ function AuthContent() {
                     setTimeout(() => {
                         const redirectPath = searchParams.get('redirect') || '/ai-coach/welcome';
                         router.replace(redirectPath);
-                    }, 400);
+                    }, 1000);
                 } else {
                     throw new Error(result.message || 'Authentication failed');
                 }

@@ -322,11 +322,8 @@ export const saveSignupOTP = async (uid: string, email: string, code: string) =>
  */
 export const triggerOTPVerification = async (email: string, uid: string) => {
   const code = generateOTP();
-  // Parallelize database save and email sending
-  await Promise.all([
-    saveSignupOTP(uid, email, code),
-    sendSignupOTP(email, code)
-  ]);
+  await saveSignupOTP(uid, email, code);
+  await sendSignupOTP(email, code);
   console.log(`✅ OTP triggered for ${email}`);
   return code;
 };
@@ -641,11 +638,6 @@ export const authenticateCustomer = async (customerObject: { email: string; cust
       // Existing user
       const userDoc = querySnapshot.docs[0];
       uid = userDoc.id;
-      const profile = userDoc.data();
-
-      // Optimize: Use existing profile data to decide redirection/OTP
-      const isVerified = profile?.otpVerified || profile?.isEmailVerified || false;
-      const credits = profile?.credits || 0;
 
       // Update customer ID if needed
       if (userDoc.data().shopifyCustomerId !== normalizedCustomerId) {
@@ -668,10 +660,11 @@ export const authenticateCustomer = async (customerObject: { email: string; cust
     try {
       const userCredential = await signInWithEmailAndPassword(auth, normalizedEmail, bridgePassword);
 
-      // Check if verified, if not trigger OTP (Non-blocking for faster redirect)
-      if (!isVerified) {
-        console.log("⚠️ Bridge login user unverified, triggering OTP in background...");
-        triggerOTPVerification(normalizedEmail, userCredential.user.uid);
+      // Check if verified, if not trigger OTP
+      const profile = await getUserProfile(userCredential.user.uid);
+      if (profile && !profile.otpVerified && !profile.isEmailVerified) {
+        console.log("⚠️ Bridge login user unverified, triggering OTP...");
+        await triggerOTPVerification(normalizedEmail, userCredential.user.uid);
       }
 
       return {
@@ -680,9 +673,9 @@ export const authenticateCustomer = async (customerObject: { email: string; cust
         uid: userCredential.user.uid,
         email: normalizedEmail,
         shopifyCustomerId: customerId,
-        otpVerified: isVerified,
-        isEmailVerified: isVerified,
-        credits: credits,
+        otpVerified: profile?.otpVerified || profile?.isEmailVerified || false,
+        isEmailVerified: profile?.isEmailVerified || profile?.otpVerified || false,
+        credits: profile?.credits || 0,
         message: "Customer logged in automatically via bridge"
       };
     } catch (loginError: any) {
