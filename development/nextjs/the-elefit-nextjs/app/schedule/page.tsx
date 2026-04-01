@@ -346,6 +346,24 @@ function ScheduleContent() {
                                                 <span className="text-sm font-black text-primary tracking-tighter">{headerData.calories} kcal</span>
                                             </div>
                                         </div>
+
+                                        {/* Desktop Only Navigation Arrows */}
+                                        <div className="hidden md:flex items-center gap-4">
+                                            <button
+                                                onClick={handlePrevDay}
+                                                disabled={selectedDayIndex === 0}
+                                                className={`h-11 w-11 flex items-center justify-center rounded-full border border-[#212121] bg-[#1a1a1a] transition-all ${selectedDayIndex === 0 ? 'opacity-20 cursor-not-allowed' : 'text-[#898989] hover:text-white hover:border-white/40 active:scale-95'}`}
+                                            >
+                                                <ChevronLeft className="h-6 w-6" />
+                                            </button>
+                                            <button
+                                                onClick={handleNextDay}
+                                                disabled={selectedDayIndex === 6}
+                                                className={`h-11 w-11 flex items-center justify-center rounded-full border border-[#212121] bg-[#1a1a1a] transition-all ${selectedDayIndex === 6 ? 'opacity-20 cursor-not-allowed' : 'text-[#898989] hover:text-white hover:border-white/40 active:scale-95'}`}
+                                            >
+                                                <ChevronRight className="h-6 w-6" />
+                                            </button>
+                                        </div>
                                     </div>
 
                                     {/* Meals Grid */}

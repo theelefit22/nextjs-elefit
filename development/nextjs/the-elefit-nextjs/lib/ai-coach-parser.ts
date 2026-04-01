@@ -151,55 +151,84 @@ export function parseWorkoutPlan(text: string): WeeklyWorkouts {
 }
 
 export function extractSpecsFromPrompt(prompt: string) {
-    const p = prompt.toLowerCase();
+    let p = prompt.toLowerCase();
     const specs: any = {};
 
-    // 1. AGE: "i am 25", "25 years old", "age 25", "25 y.o"
-    const ageMatch = p.match(/(?:i'm|i am|age|is|at)\s*(\d{1,3})(?!\s*(?:kg|cm|m|lbs))/i) ||
-        p.match(/(\d{1,3})\s*(?:years?|y(?:\.o\.)?|yrs?|age)/i);
-    if (ageMatch) specs.age = ageMatch[1];
-
-    // 2. HEIGHT: "175cm", "175 centimeters", "1.75m"
-    const heightMatch = p.match(/(\d{2,3})\s*(?:cm|cms|centimeters?)/i);
+    // 1. HEIGHT: "175cm", "175 centimeters", "1.75m"
+    // Extract first to prevent interference with age
+    const heightRegex = /(\d{2,3})\s*(?:cm|cms|centimeters?)/i;
+    const heightMatch = p.match(heightRegex);
     if (heightMatch) {
         specs.height = heightMatch[1];
+        p = p.replace(heightMatch[0], '[HEIGHT]'); // Mask it
     } else {
         const mMatch = p.match(/(\d\.\d{1,2})\s*(?:m|meters?)/i);
-        if (mMatch) specs.height = Math.round(parseFloat(mMatch[1]) * 100).toString();
+        if (mMatch) {
+            specs.height = Math.round(parseFloat(mMatch[1]) * 100).toString();
+            p = p.replace(mMatch[0], '[HEIGHT]');
+        }
     }
 
-    // 3. WEIGHT (CURRENT): "i am 45kg", "weight 36kgs", "i weight over 57kgs"
-    // We avoid matching if preceded by "lose", "gain", etc.
-    const weightRegex = /(?<!(?:lose|shed|drop|reduce|gain|add|put on|target|reach|to|goal)\s*)\b(?:i'm|i am|weight|i weigh|currently|at|is|over|around|about|above|below)\b\s*(\d+(?:\.\d+)?)\s*(?:kgs?|kilograms?|lbs?|pounds?)/i;
-    const weightAltRegex = /(\d+(?:\.\d+)?)\s*(?:kgs?|kilograms?|lbs?|pounds?)\b\s*(?:weight|currently|at|i am|i'm|is|above|below|over|around)/i;
+    // 2. WEIGHT (CURRENT): "i am 45kg", "weight 36kgs", "i weight over 57kgs"
+    const currentWeightRegex = /(?<!(?:lose|shed|drop|reduce|gain|add|put on|target|reach|to|goal)\s*)\b(?:i'm|i am|weight|i weigh|currently|at|is|over|around|about|above|below)\b\s*(\d+(?:\.\d+)?)\s*(?:kgs?|kilograms?|lbs?|pounds?)/i;
+    const currentWeightAltRegex = /(\d+(?:\.\d+)?)\s*(?:kgs?|kilograms?|lbs?|pounds?)\b\s*(?:weight|currently|at|i am|i'm|is|above|below|over|around)/i;
 
-    const weightMatch = p.match(weightRegex) || p.match(weightAltRegex);
-    if (weightMatch) specs.currentWeight = weightMatch[1];
+    const weightMatch = p.match(currentWeightRegex);
+    if (weightMatch) {
+        specs.currentWeight = weightMatch[1];
+        p = p.replace(weightMatch[0], '[WEIGHT]');
+    } else {
+        const weightAltMatch = p.match(currentWeightAltRegex);
+        if (weightAltMatch) {
+            specs.currentWeight = weightAltMatch[1];
+            p = p.replace(weightAltMatch[0], '[WEIGHT]');
+        }
+    }
 
-    // 4. WEIGHT CHANGE (Relative): "lose 5kg", "gain 3kg"
-    const loseMatch = p.match(/(?:lose|shed|drop|reduce)\s*(\d+(?:\.\d+)?)\s*(?:kg|kgs|lbs|pounds?)?/i);
-    const gainMatch = p.match(/(?:gain|add|put on)\s*(\d+(?:\.\d+)?)\s*(?:kg|kgs|lbs|pounds?)?/i);
+    // 3. WEIGHT CHANGE (Relative): "lose 5kg", "gain 3kg"
+    const loseRegex = /(?:lose|shed|drop|reduce)\s*(\d+(?:\.\d+)?)\s*(?:kg|kgs|lbs|pounds?)?/i;
+    const loseMatch = p.match(loseRegex);
+    if (loseMatch) {
+        specs.weightToLose = parseFloat(loseMatch[1]);
+        p = p.replace(loseMatch[0], '[LOSE]');
+    }
 
-    if (loseMatch) specs.weightToLose = parseFloat(loseMatch[1]);
-    if (gainMatch) specs.weightToGain = parseFloat(gainMatch[1]);
+    const gainRegex = /(?:gain|add|put on)\s*(\d+(?:\.\d+)?)\s*(?:kg|kgs|lbs|pounds?)?/i;
+    const gainMatch = p.match(gainRegex);
+    if (gainMatch) {
+        specs.weightToGain = parseFloat(gainMatch[1]);
+        p = p.replace(gainMatch[0], '[GAIN]');
+    }
 
-    // 5. TARGET WEIGHT (EXPLICIT): "target is 70kg"
-    const targetMatch = p.match(/(?:target|reach|to|goal)\s*(?:weight\s*)?(?:is\s*|at\s*)?(\d+(?:\.\d+)?)\s*(?:kg|kgs|lbs)?/i);
+    // 4. TARGET WEIGHT (EXPLICIT): "target is 70kg"
+    const targetRegex = /(?:target|reach|to|goal)\s*(?:weight\s*)?(?:is\s*|at\s*)?(\d+(?:\.\d+)?)\s*(?:kg|kgs|lbs)?/i;
+    const targetMatch = p.match(targetRegex);
     if (targetMatch) {
         specs.targetWeight = targetMatch[1];
+        p = p.replace(targetMatch[0], '[TARGET]');
     }
 
-    // 6. GENDER
-    if (/\mb(male|man|boy|gentleman)\b/i.test(p)) specs.gender = 'male';
-    else if (/\b(female|woman|girl|lady)\b/i.test(p)) specs.gender = 'female';
-
-    // 7. TIMELINE: "6 months", "12 weeks"
-    const timelineMatch = p.match(/(\d+)\s*(weeks?|months?|wks?|mos?)/i);
+    // 5. TIMELINE: "6 months", "12 weeks"
+    const timelineRegex = /(\d+)\s*(weeks?|months?|wks?|mos?)/i;
+    const timelineMatch = p.match(timelineRegex);
     if (timelineMatch) {
         specs.timelineValue = timelineMatch[1];
         const unit = timelineMatch[2].toLowerCase();
         specs.timelineUnit = (unit.startsWith('w')) ? 'weeks' : 'months';
+        p = p.replace(timelineMatch[0], '[TIMELINE]');
     }
+
+    // 6. AGE: "i am 25", "25 years old", "age 25", "25 y.o"
+    // Now looking in a string where height/weight are masked
+    const ageRegex = /(?:i'm|i am|age|is|at)\s*(\d{1,3})\b/i;
+    const ageUnitsRegex = /\b(\d{1,3})\b\s*(?:years?|y(?:\.o\.)?|yrs?|age)/i;
+
+    const ageMatch = p.match(ageRegex) || p.match(ageUnitsRegex);
+    if (ageMatch) specs.age = ageMatch[1];
+
+    // 7. GENDER
+    if (/\b(male|man|boy|gentleman)\b/i.test(p)) specs.gender = 'male';
+    else if (/\b(female|woman|girl|lady)\b/i.test(p)) specs.gender = 'female';
 
     return specs;
 }
