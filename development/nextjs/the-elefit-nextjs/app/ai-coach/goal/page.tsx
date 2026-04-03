@@ -110,8 +110,8 @@ export default function Goal() {
         updateData({
             ...mergedDetails,
             activityLevel: profileData.activityLevel || data.activityLevel,
-            dietaryText: (profileData.dietaryRestrictions || profileData.allergies || profileData.healthGoals)
-                ? [profileData.dietaryRestrictions, profileData.allergies, profileData.healthGoals].filter(Boolean).join('. ')
+            dietaryText: (profileData.dietaryRestrictions || profileData.allergies)
+                ? [profileData.dietaryRestrictions, profileData.allergies].filter(Boolean).join('. ')
                 : data.dietaryText
         });
 
