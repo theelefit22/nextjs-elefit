@@ -186,14 +186,15 @@ export function extractSpecsFromPrompt(prompt: string) {
     }
 
     // 3. WEIGHT CHANGE (Relative): "lose 5kg", "gain 3kg"
-    const loseRegex = /(?:lose|shed|drop|reduce)\s*(\d+(?:\.\d+)?)\s*(?:kg|kgs|lbs|pounds?)?/i;
+    // We add a negative lookahead to ignore percentage goals or body fat targets
+    const loseRegex = /(?:lose|shed|drop|reduce)\s*(\d+(?:\.\d+)?)\b(?!\s*(?:%|percent|percentage|body fat))\s*(?:kg|kgs|lbs|pounds?)?/i;
     const loseMatch = p.match(loseRegex);
     if (loseMatch) {
         specs.weightToLose = parseFloat(loseMatch[1]);
         p = p.replace(loseMatch[0], '[LOSE]');
     }
 
-    const gainRegex = /(?:gain|add|put on)\s*(\d+(?:\.\d+)?)\s*(?:kg|kgs|lbs|pounds?)?/i;
+    const gainRegex = /(?:gain|add|put on)\s*(\d+(?:\.\d+)?)\b(?!\s*(?:%|percent|percentage|body fat))\s*(?:kg|kgs|lbs|pounds?)?/i;
     const gainMatch = p.match(gainRegex);
     if (gainMatch) {
         specs.weightToGain = parseFloat(gainMatch[1]);
@@ -201,7 +202,8 @@ export function extractSpecsFromPrompt(prompt: string) {
     }
 
     // 4. TARGET WEIGHT (EXPLICIT): "target is 70kg"
-    const targetRegex = /(?:target|reach|to|goal)\s*(?:weight\s*)?(?:is\s*|at\s*)?(\d+(?:\.\d+)?)\s*(?:kg|kgs|lbs)?/i;
+    // We add a negative lookahead to ignore percentage values (e.g., "to 15%")
+    const targetRegex = /(?:target|reach|to|goal)\s*(?:weight\s*)?(?:is\s*|at\s*)?(\d+(?:\.\d+)?)\b(?!\s*(?:%|percent|percentage|body fat))\s*(?:kg|kgs|lbs)?/i;
     const targetMatch = p.match(targetRegex);
     if (targetMatch) {
         specs.targetWeight = targetMatch[1];
