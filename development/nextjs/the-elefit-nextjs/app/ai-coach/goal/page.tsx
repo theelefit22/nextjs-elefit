@@ -11,7 +11,7 @@ import { AiCoachModal } from '@/components/AiCoachModal';
 import { extractSpecsFromPrompt } from '@/lib/ai-coach-parser';
 
 export default function Goal() {
-    const { data, updateData } = useAiCoach();
+    const { data, updateData, clearOnboardingFlow } = useAiCoach();
     const { user } = useAuth();
     const [goal, setGoal] = useState(data.prompt);
     const [mounted, setMounted] = useState(false);
@@ -30,13 +30,14 @@ export default function Goal() {
         if (!goal.trim() || loading) return;
 
         setLoading(true);
-        updateData({ prompt: goal.trim() });
 
         // 1. Extract specs from prompt locally
         const extracted = extractSpecsFromPrompt(goal.trim());
         console.log("Extracted from prompt (local):", extracted);
 
+        // 2. Conditional Reset: Only clear if prompt contains explicit details
         if (Object.keys(extracted).length > 0) {
+            clearOnboardingFlow();
             // Handle relative weight even for manual fill if current weight was provided in prompt
             if (!extracted.targetWeight && extracted.currentWeight) {
                 if (extracted.weightToLose) {
@@ -45,7 +46,10 @@ export default function Goal() {
                     extracted.targetWeight = (parseFloat(extracted.currentWeight) + extracted.weightToGain).toString();
                 }
             }
-            updateData(extracted);
+            updateData({ ...extracted, prompt: goal.trim() });
+        } else {
+            // No details in prompt, just update prompt and keep existing data
+            updateData({ prompt: goal.trim() });
         }
 
         // 2. Check profile for pre-fill

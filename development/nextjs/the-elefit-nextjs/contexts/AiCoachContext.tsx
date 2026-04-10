@@ -47,6 +47,7 @@ export interface AiCoachData {
 interface AiCoachContextType {
     data: AiCoachData;
     updateData: (updates: Partial<AiCoachData>) => void;
+    clearOnboardingFlow: () => void;
     resetData: () => void;
     isGenerating: boolean;
     setIsGenerating: (value: boolean) => void;
@@ -98,6 +99,17 @@ export const AiCoachProvider: React.FC<{ children: ReactNode }> = ({ children })
         });
     };
 
+    const clearOnboardingFlow = () => {
+        setData(prev => {
+            const newData = {
+                ...initialData,
+                prompt: prev.prompt,
+            };
+            localStorage.setItem('ai_coach_onboarding', JSON.stringify(newData));
+            return newData;
+        });
+    };
+
     const resetData = () => {
         setData(initialData);
         localStorage.removeItem('ai_coach_onboarding');
@@ -107,7 +119,7 @@ export const AiCoachProvider: React.FC<{ children: ReactNode }> = ({ children })
     };
 
     return (
-        <AiCoachContext.Provider value={{ data, updateData, resetData, isGenerating, setIsGenerating }}>
+        <AiCoachContext.Provider value={{ data, updateData, clearOnboardingFlow, resetData, isGenerating, setIsGenerating }}>
             {children}
         </AiCoachContext.Provider>
     );

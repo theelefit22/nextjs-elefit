@@ -100,7 +100,9 @@ export default function Details() {
                             <div className="space-y-4">
                                 {/* Name */}
                                 <div className="space-y-2">
-                                    <label className="text-[11px] font-black text-white/40 uppercase tracking-widest ml-1">Name</label>
+                                    <label className="text-[11px] font-black text-white/40 uppercase tracking-widest ml-1 flex items-center">
+                                        Name {!formData.name && <span className="text-red-500 ml-1 text-base">*</span>}
+                                    </label>
                                     <input
                                         type="text"
                                         value={formData.name}
@@ -113,7 +115,9 @@ export default function Details() {
                                 {/* Age and Height */}
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <label className="text-[11px] font-black text-white/40 uppercase tracking-widest ml-1">Age</label>
+                                        <label className="text-[11px] font-black text-white/40 uppercase tracking-widest ml-1 flex items-center">
+                                            Age {!formData.age && <span className="text-red-500 ml-1 text-base">*</span>}
+                                        </label>
                                         <input
                                             type="number"
                                             value={formData.age}
@@ -123,7 +127,9 @@ export default function Details() {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[11px] font-black text-white/40 uppercase tracking-widest ml-1">Height (cm)</label>
+                                        <label className="text-[11px] font-black text-white/40 uppercase tracking-widest ml-1 flex items-center">
+                                            Height (cm) {!formData.height && <span className="text-red-500 ml-1 text-base">*</span>}
+                                        </label>
                                         <input
                                             type="number"
                                             value={formData.height}
@@ -164,7 +170,9 @@ export default function Details() {
                                 {/* Weights */}
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <label className="text-[11px] font-black text-white/40 uppercase tracking-widest ml-1 text-xs">Current Weight (kg)</label>
+                                        <label className="text-[11px] font-black text-white/40 uppercase tracking-widest ml-1 text-xs flex items-center">
+                                            Current Weight (kg) {!formData.currentWeight && <span className="text-red-500 ml-1 text-base">*</span>}
+                                        </label>
                                         <input
                                             type="number"
                                             value={formData.currentWeight}
@@ -174,7 +182,9 @@ export default function Details() {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[11px] font-black text-white/40 uppercase tracking-widest ml-1 text-xs">Target Weight (kg)</label>
+                                        <label className="text-[11px] font-black text-white/40 uppercase tracking-widest ml-1 text-xs flex items-center">
+                                            Target Weight (kg) {!formData.targetWeight && <span className="text-red-500 ml-1 text-base">*</span>}
+                                        </label>
                                         <input
                                             type="number"
                                             value={formData.targetWeight}
@@ -227,8 +237,8 @@ export default function Details() {
                                 type="submit"
                                 disabled={!isFormValid}
                                 className={`w-full py-4 rounded-full font-black text-sm transition-all shadow-[0_4px_15px_rgba(204,216,83,0.3)] ${isFormValid
-                                        ? 'bg-primary text-black hover:scale-[1.02] active:scale-[0.98]'
-                                        : 'bg-primary/20 text-black/40 cursor-not-allowed opacity-50'
+                                    ? 'bg-primary text-black hover:scale-[1.02] active:scale-[0.98]'
+                                    : 'bg-primary/20 text-black/40 cursor-not-allowed opacity-50'
                                     }`}
                             >
                                 Continue

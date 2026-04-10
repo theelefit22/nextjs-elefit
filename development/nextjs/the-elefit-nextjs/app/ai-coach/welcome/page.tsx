@@ -8,11 +8,13 @@ import { getUserPlans, getCurrentUser } from '@/shared/firebase';
 import BottomNavNew from '@/components/BottomNavNew';
 import MobileNavDrawer from '@/components/MobileNavDrawer';
 import { useEffect } from 'react';
+import { useAiCoach } from '@/contexts/AiCoachContext';
 import { ChevronRight, Calendar, Sparkles, Mail } from 'lucide-react';
 
 export default function Welcome() {
     const router = useRouter();
-    const { isAuthenticated, user } = useAuth();
+    const { isAuthenticated, user, refreshProfile } = useAuth();
+    const { resetData } = useAiCoach();
     const [activeDrawer, setActiveDrawer] = useState<'continue' | 'new' | null>(null);
     const [savedPlans, setSavedPlans] = useState<any[]>([]);
     const [loadingPlans, setLoadingPlans] = useState(false);
@@ -130,7 +132,10 @@ export default function Welcome() {
 
                         {/* Start New Plan Card */}
                         <button
-                            onClick={() => handleAction(() => router.push('/ai-coach/goal'))}
+                            onClick={() => handleAction(() => {
+                                resetData();
+                                router.push('/ai-coach/goal');
+                            })}
                             className="w-full text-left group relative overflow-hidden rounded-[24px] border border-[#2d2d2d] bg-black/40 backdrop-blur-xl p-6 transition-all active:scale-[0.98]"
                         >
                             <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-lime-500/20 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -225,7 +230,10 @@ export default function Welcome() {
 
                                 <div className="pt-4 border-t border-white/10">
                                     <button
-                                        onClick={() => router.push('/ai-coach/goal')}
+                                        onClick={() => {
+                                            resetData();
+                                            router.push('/ai-coach/goal');
+                                        }}
                                         className="w-full py-4 text-primary font-black text-sm hover:underline"
                                     >
                                         + Start a fresh new plan

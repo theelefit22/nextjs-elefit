@@ -41,7 +41,7 @@ export default function Preferences() {
         { id: 'very-active', label: 'Very Active', icon: '🔥', desc: 'Intense daily exercise' },
     ];
 
-    const dietTags = ['Veg / Non-veg', 'Vegan', 'No dairy', 'No eggs'];
+    const dietTags = ['Vegetarian', 'Vegan', 'No dairy', 'No eggs'];
 
     return (
         <div className="relative min-h-screen w-full bg-black overflow-hidden flex flex-col font-sans">
