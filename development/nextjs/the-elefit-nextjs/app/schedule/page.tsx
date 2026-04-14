@@ -13,6 +13,8 @@ import { useSearchParams } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { generatePlanPDF } from '@/lib/pdf-utils';
+import { getShopifyProducts, ShopifyProduct } from '@/lib/shopify';
+import Image from 'next/image';
 
 const DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 const MEAL_TIMES = ['Breakfast', 'Lunch', 'Snacks', 'Dinner'];
@@ -24,12 +26,9 @@ const MEAL_ICONS: Record<string, string> = {
     Dinner: '🌙',
 };
 
-const SUGGESTED_PRODUCTS = [
-    { name: 'Gym Floor Kettlebells', price: '₹ 2,499.00', image: '🏋️' },
-    { name: 'Resistance Bands', price: '₹ 2,499.00', image: '💪' },
-    { name: 'Yoga Mat & Strap', price: '₹ 999.00', image: '🧘' },
-    { name: 'Dumbbell Set', price: '₹ 5,999.00', image: '⏱️' },
-    { name: 'Yoga Straps', price: '₹ 1,099.00', image: '🎯' },
+// Products will be fetched from Shopify
+const SUGGESTED_PRODUCTS_DEFAULT = [
+    { name: 'Loading products...', price: '', image: '⏳' },
 ];
 
 import { ProtectedRoute } from '@/components/ProtectedRoute';
@@ -56,6 +55,8 @@ function ScheduleContent() {
     const [isSaving, setIsSaving] = useState(false);
     const [isPlanSaved, setIsPlanSaved] = useState(false);
     const [isSaveEditDrawerOpen, setIsSaveEditDrawerOpen] = useState(false);
+    const [products, setProducts] = useState<ShopifyProduct[]>([]);
+    const [showAllProducts, setShowAllProducts] = useState(false);
 
     // Initialize accordions based on screen size
     useEffect(() => {
@@ -89,6 +90,19 @@ function ScheduleContent() {
             fetchPlan();
         }
     }, [planId]);
+
+    // Fetch Shopify products
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                const shopifyProducts = await getShopifyProducts(20);
+                setProducts(shopifyProducts);
+            } catch (error) {
+                console.error("Error fetching Shopify products:", error);
+            }
+        };
+        fetchProducts();
+    }, []);
 
     // Parse plans
     const parsedMeals = useMemo<WeeklyMeals | null>(() => {
@@ -485,20 +499,50 @@ function ScheduleContent() {
                                     <div className="space-y-6">
                                         <div className="flex items-center justify-between">
                                             <h3 className="font-bold text-white text-sm">Suggested products</h3>
-                                            <button className="text-[11px] font-bold text-primary hover:underline transition-all">View all</button>
-                                        </div>
-                                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                                            {SUGGESTED_PRODUCTS.map((product, idx) => (
-                                                <div
-                                                    key={idx}
-                                                    className="group rounded-2xl bg-[#0c0c0c] border border-[#212121] p-4 text-center space-y-3 hover:border-primary transition-all cursor-pointer h-fit"
+                                            {products.length > 5 && (
+                                                <button
+                                                    onClick={() => setShowAllProducts(!showAllProducts)}
+                                                    className="text-[11px] font-bold text-primary hover:underline transition-all"
                                                 >
-                                                    <div className="text-4xl py-2">{product.image}</div>
-                                                    <div className="space-y-1">
-                                                        <p className="text-[10px] text-white font-bold line-clamp-1">{product.name}</p>
-                                                        <p className="text-[10px] text-primary font-black">Rs. {idx === 0 ? '4,000.00' : idx === 1 ? '2,500.00' : '400.00'}</p>
+                                                    {showAllProducts ? 'Show less' : 'View all'}
+                                                </button>
+                                            )}
+                                        </div>
+                                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                                            {(showAllProducts ? products : products.slice(0, 5)).map((product) => {
+                                                const imageUrl = product.images.edges[0]?.node.url || null;
+                                                const price = product.priceRange.minVariantPrice;
+                                                const formattedPrice = new Intl.NumberFormat('en-IN', {
+                                                    style: 'currency',
+                                                    currency: price.currencyCode,
+                                                }).format(parseFloat(price.amount));
+
+                                                return (
+                                                    <div
+                                                        key={product.id}
+                                                        onClick={() => product.onlineStoreUrl && window.open(product.onlineStoreUrl, '_blank')}
+                                                        className="group rounded-2xl bg-[#0c0c0c] border border-[#212121] p-4 text-center space-y-3 hover:border-primary transition-all cursor-pointer h-full flex flex-col justify-between"
+                                                    >
+                                                        <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-white/5 flex items-center justify-center">
+                                                            {imageUrl ? (
+                                                                <img
+                                                                    src={imageUrl}
+                                                                    alt={product.title}
+                                                                    className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500"
+                                                                />
+                                                            ) : (
+                                                                <span className="text-4xl opacity-20">🛒</span>
+                                                            )}
+                                                        </div>
+                                                        <div className="space-y-1">
+                                                            <p className="text-[10px] text-white font-bold line-clamp-2 min-h-[2.5em]">{product.title}</p>
+                                                            <p className="text-[10px] text-primary font-black uppercase">{formattedPrice}</p>
+                                                        </div>
                                                     </div>
-                                                </div>
+                                                );
+                                            })}
+                                            {products.length === 0 && Array.from({ length: 5 }).map((_, i) => (
+                                                <div key={i} className="rounded-2xl bg-[#0c0c0c] border border-[#212121] p-4 animate-pulse aspect-[4/5]" />
                                             ))}
                                         </div>
                                     </div>
@@ -507,75 +551,73 @@ function ScheduleContent() {
                         </div>
                     </div>
                 </div>
+            </div>
 
-                {/* Save (Favorite) Modal */}
-                {
-                    isSaveModalOpen && (
-                        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-                            <div className="w-full max-w-sm rounded-[32px] border border-[#212121] bg-[#0c0c0c] p-8 shadow-2xl">
-                                <h3 className="text-lg font-bold text-white mb-2 text-center">Add To Favorites</h3>
-                                {/* <p className="text-xs text-[#898989] mb-6 text-center">Pick a name to find this in your Favorite Plans</p> */}
+            {/* Save (Favorite) Modal */}
+            {isSaveModalOpen && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+                    <div className="w-full max-w-sm rounded-[32px] border border-[#212121] bg-[#0c0c0c] p-8 shadow-2xl">
+                        <h3 className="text-lg font-bold text-white mb-2 text-center">Add To Favorites</h3>
+                        {/* <p className="text-xs text-[#898989] mb-6 text-center">Pick a name to find this in your Favorite Plans</p> */}
 
-                                <div className="space-y-4">
-                                    <div className="space-y-1.5">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-[#454545] ml-1">Pick a Name</label>
-                                        <Input
-                                            value={planName}
-                                            onChange={(e) => setPlanName(e.target.value)}
-                                            placeholder="e.g. 12 Week Shred"
-                                            className="bg-[#111] border-[#212121] text-white h-12 rounded-2xl focus:ring-primary"
-                                        />
-                                    </div>
+                        <div className="space-y-4">
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold uppercase tracking-widest text-[#454545] ml-1">Pick a Name</label>
+                                <Input
+                                    value={planName}
+                                    onChange={(e) => setPlanName(e.target.value)}
+                                    placeholder="e.g. 12 Week Shred"
+                                    className="bg-[#111] border-[#212121] text-white h-12 rounded-2xl focus:ring-primary"
+                                />
+                            </div>
 
-                                    <div className="flex gap-3 pt-2">
-                                        <Button
-                                            variant="outline"
-                                            onClick={() => setIsSaveModalOpen(false)}
-                                            className="flex-1 bg-transparent border-[#212121] text-[#898989] hover:bg-white/5 h-12 rounded-2xl font-bold"
-                                        >
-                                            Cancel
-                                        </Button>
-                                        <Button
-                                            onClick={async () => {
-                                                const user = getCurrentUser();
-                                                if (user) {
-                                                    setIsSaving(true);
-                                                    try {
-                                                        const mealPlanRaw = data.mealPlan || localStorage.getItem('generated_meal_plan_raw');
-                                                        const workoutPlanRaw = data.workoutPlan || localStorage.getItem('generated_workout_plan_raw');
+                            <div className="flex gap-3 pt-2">
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setIsSaveModalOpen(false)}
+                                    className="flex-1 bg-transparent border-[#212121] text-[#898989] hover:bg-white/5 h-12 rounded-2xl font-bold"
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    onClick={async () => {
+                                        const user = getCurrentUser();
+                                        if (user) {
+                                            setIsSaving(true);
+                                            try {
+                                                const mealPlanRaw = data.mealPlan || localStorage.getItem('generated_meal_plan_raw');
+                                                const workoutPlanRaw = data.workoutPlan || localStorage.getItem('generated_workout_plan_raw');
 
-                                                        await saveUserPlan(user.uid, planName, {
-                                                            goal: data.prompt,
-                                                            mealPlan: mealPlanRaw,
-                                                            workoutPlan: workoutPlanRaw,
-                                                            calculatedData: data.calculatedData,
-                                                            planGenerationDate: localStorage.getItem('plan_generation_date')
-                                                        });
-                                                        setIsSaveModalOpen(false);
-                                                        setIsPlanSaved(true);
-                                                        alert('Plan favorited successfully!');
-                                                    } catch (e) {
-                                                        alert('Failed to favorite plan');
-                                                    } finally {
-                                                        setIsSaving(false);
-                                                    }
-                                                }
-                                            }}
-                                            disabled={isSaving}
-                                            className="flex-1 bg-primary text-black hover:bg-primary/90 h-12 rounded-2xl font-bold"
-                                        >
-                                            {isSaving ? 'Favoriting...' : 'Save'}
-                                        </Button>
-                                    </div>
-                                </div>
+                                                await saveUserPlan(user.uid, planName, {
+                                                    goal: data.prompt,
+                                                    mealPlan: mealPlanRaw,
+                                                    workoutPlan: workoutPlanRaw,
+                                                    calculatedData: data.calculatedData,
+                                                    planGenerationDate: localStorage.getItem('plan_generation_date')
+                                                });
+                                                setIsSaveModalOpen(false);
+                                                setIsPlanSaved(true);
+                                                alert('Plan favorited successfully!');
+                                            } catch (e) {
+                                                alert('Failed to favorite plan');
+                                            } finally {
+                                                setIsSaving(false);
+                                            }
+                                        }
+                                    }}
+                                    disabled={isSaving}
+                                    className="flex-1 bg-primary text-black hover:bg-primary/90 h-12 rounded-2xl font-bold"
+                                >
+                                    {isSaving ? 'Favoriting...' : 'Save'}
+                                </Button>
                             </div>
                         </div>
-                    )
-                }
+                    </div>
+                </div>
+            )}
 
-                {/* Bottom Nav */}
-                <BottomNavNew />
-            </div>
+            {/* Bottom Nav */}
+            <BottomNavNew />
         </div>
     );
 }

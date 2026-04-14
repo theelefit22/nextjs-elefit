@@ -10,6 +10,28 @@ const shopifyClient = new GraphQLClient(STOREFRONT_API_URL, {
   },
 });
 
+export interface ShopifyProduct {
+  id: string;
+  title: string;
+  handle: string;
+  description: string;
+  onlineStoreUrl: string;
+  images: {
+    edges: {
+      node: {
+        url: string;
+        altText: string;
+      };
+    }[];
+  };
+  priceRange: {
+    minVariantPrice: {
+      amount: string;
+      currencyCode: string;
+    };
+  };
+}
+
 /**
  * Authenticate customer with Shopify and return access token
  */
@@ -194,5 +216,50 @@ export const createShopifyCustomer = async (input: {
   } catch (error: any) {
     console.error('Shopify customer creation error:', error);
     throw error;
+  }
+};
+
+/**
+ * Fetch products from Shopify
+ */
+export const getShopifyProducts = async (first: number = 20) => {
+  const query = gql`
+    query getProducts($first: Int!) {
+      products(first: $first) {
+        edges {
+          node {
+            id
+            title
+            handle
+            description
+            onlineStoreUrl
+            images(first: 1) {
+              edges {
+                node {
+                  url
+                  altText
+                }
+              }
+            }
+            priceRange {
+              minVariantPrice {
+                amount
+                currencyCode
+              }
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  const variables = { first };
+
+  try {
+    const data: any = await shopifyClient.request(query, variables);
+    return data.products.edges.map((edge: any) => edge.node) as ShopifyProduct[];
+  } catch (error: any) {
+    console.error('Shopify get products error:', error);
+    return [];
   }
 };
