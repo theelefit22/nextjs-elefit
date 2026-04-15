@@ -115,6 +115,26 @@ function ScheduleContent() {
         return raw ? parseWorkoutPlan(raw) : null;
     }, [data.workoutPlan, savedPlanData]);
 
+    // Prioritize specific products
+    const sortedProducts = useMemo(() => {
+        const priorityTitles = [
+            "Smart Body Fat Scale with Bright LED Display & 14 Core Metrics",
+            "Lifting Straps BLACK for Weightlifting, Bodybuilding, Powerlifting & Deadlifts – Extra-Long 18” Cotton Straps with Padded Neoprene Wrist Support",
+            "Lifting Grips GREEN – Built to Lift Heavy. Built to Last.",
+            "Performance Lifting Belt WHITE"
+        ];
+
+        return [...products].sort((a, b) => {
+            const indexA = priorityTitles.indexOf(a.title);
+            const indexB = priorityTitles.indexOf(b.title);
+
+            if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+            if (indexA !== -1) return -1;
+            if (indexB !== -1) return 1;
+            return 0;
+        });
+    }, [products]);
+
     // Plan header data (either from saved plan or current context)
     const headerData = {
         prompt: savedPlanData?.name || data.prompt || "AI Coach",
@@ -509,7 +529,7 @@ function ScheduleContent() {
                                             )}
                                         </div>
                                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                                            {(showAllProducts ? products : products.slice(0, 5)).map((product) => {
+                                            {(showAllProducts ? sortedProducts : sortedProducts.slice(0, 5)).map((product) => {
                                                 const imageUrl = product.images.edges[0]?.node.url || null;
                                                 const price = product.priceRange.minVariantPrice;
                                                 const formattedPrice = new Intl.NumberFormat('en-IN', {

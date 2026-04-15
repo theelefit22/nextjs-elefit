@@ -431,10 +431,10 @@ export default function Calories() {
                                 {/* Medical Disclaimer */}
                                 <div
                                     onClick={() => setDisclaimerExpanded(!disclaimerExpanded)}
-                                    className="flex gap-2 p-4 bg-red-500/5 rounded-2xl border border-red-500/10 cursor-pointer hover:bg-red-500/10 transition-all group"
+                                    className="flex gap-2 p-4 bg-zinc-900/80 hover:bg-zinc-900 rounded-2xl border border-zinc-700/50 cursor-pointer transition-all group"
                                 >
                                     <span className="text-sm">⚠️</span>
-                                    <p className={`text-[9px] font-medium text-white/40 leading-relaxed transition-all ${disclaimerExpanded ? '' : 'line-clamp-2'}`}>
+                                    <p className={`text-[9px] font-medium text-white/60 leading-relaxed transition-all ${disclaimerExpanded ? '' : 'line-clamp-2'}`}>
                                         This site offers health, fitness and nutritional information and is designed for educational purposes only. You should not rely on this information as a substitute for, nor does it replace, professional medical advice, diagnosis, or treatment. If you have any concerns or questions about your health, you should always consult with a physician or other health-care professional. Do not disregard, avoid or delay obtaining medical or health related advice from your health-care professional because of something you may have read on this site. The use of any information provided on this site is solely at your own risk.
                                     </p>
                                 </div>
