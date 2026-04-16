@@ -441,8 +441,8 @@ function ScheduleContent() {
                                 <>
                                     {/* Goal */}
                                     <div className="flex items-center justify-center gap-2">
-                                        <span className="text-xs font-bold uppercase tracking-widest text-[#454545]">Focus</span>
-                                        <span className="h-px w-8 bg-[#212121]" />
+                                        <span className="text-lg font-bold uppercase tracking-widest text-[#D5E138]">Focus</span>
+                                        <span className="h-px w-4 bg-[#D5E138]" />
                                         <span className="text-lg md:text-xl font-black text-primary uppercase tracking-tighter">
                                             {headerData.workoutFocus}
                                         </span>
