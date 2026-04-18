@@ -141,7 +141,8 @@ export default function Calories() {
                         carbsGrams: result.macros.carbs_g,
                         fatGrams: result.macros.fat_g,
                         workoutFocus: result.WorkoutFocus,
-                        capped: result.capped
+                        capped: result.capped,
+                        personalizedInsight: result.personalizedInsight
                     }
                 });
 
@@ -271,7 +272,8 @@ export default function Calories() {
                         carbsGrams: data.calculatedData?.carbsGrams,
                         fatGrams: data.calculatedData?.fatGrams,
                         workoutFocus: data.calculatedData?.workoutFocus,
-                        capped: data.calculatedData?.capped
+                        capped: data.calculatedData?.capped,
+                        personalizedInsight: data.calculatedData?.personalizedInsight
                     },
                     planGenerationDate: new Date().toISOString()
                 });

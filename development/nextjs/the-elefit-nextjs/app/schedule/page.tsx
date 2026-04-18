@@ -440,12 +440,32 @@ function ScheduleContent() {
                             ) : activeTab === 'workout' ? (
                                 <>
                                     {/* Goal */}
-                                    <div className="flex items-center justify-center gap-2">
-                                        <span className="text-lg font-bold uppercase tracking-widest text-[#D5E138]">Focus</span>
-                                        <span className="h-px w-4 bg-[#D5E138]" />
-                                        <span className="text-lg md:text-xl font-black text-primary uppercase tracking-tighter">
-                                            {headerData.workoutFocus}
-                                        </span>
+                                    <div className="relative flex items-center justify-center mb-6">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-lg font-bold uppercase tracking-widest text-[#BFAFAF]">Focus</span>
+                                            <span className="h-px w-4 bg-[#BFAFAF]" />
+                                            <span className="text-lg md:text-xl font-black text-primary uppercase tracking-tighter">
+                                                {headerData.workoutFocus}
+                                            </span>
+                                        </div>
+
+                                        {/* Desktop Only Navigation Arrows */}
+                                        <div className="absolute right-0 hidden md:flex items-center gap-4">
+                                            <button
+                                                onClick={handlePrevDay}
+                                                disabled={selectedDayIndex === 0}
+                                                className={`h-11 w-11 flex items-center justify-center rounded-full border border-[#212121] bg-[#1a1a1a] transition-all ${selectedDayIndex === 0 ? 'opacity-20 cursor-not-allowed' : 'text-[#898989] hover:text-white hover:border-white/40 active:scale-95'}`}
+                                            >
+                                                <ChevronLeft className="h-6 w-6" />
+                                            </button>
+                                            <button
+                                                onClick={handleNextDay}
+                                                disabled={selectedDayIndex === 6}
+                                                className={`h-11 w-11 flex items-center justify-center rounded-full border border-[#212121] bg-[#1a1a1a] transition-all ${selectedDayIndex === 6 ? 'opacity-20 cursor-not-allowed' : 'text-[#898989] hover:text-white hover:border-white/40 active:scale-95'}`}
+                                            >
+                                                <ChevronRight className="h-6 w-6" />
+                                            </button>
+                                        </div>
                                     </div>
 
                                     {/* Workout Grid - Centered on Desktop */}
@@ -501,7 +521,9 @@ function ScheduleContent() {
                                             <div className="flex items-start justify-between">
                                                 <div className="space-y-1">
                                                     <p className="text-sm font-bold text-primary">Meal Plan Focus</p>
-                                                    <p className="text-xs text-[#898989]">Consistency is the key to achieving your <span className="text-white font-bold">"{data.targetWeight}kg"</span> goal.</p>
+                                                    <p className="text-xs text-[#898989]">
+                                                        {savedPlanData?.calculatedData?.personalizedInsight || data.calculatedData?.personalizedInsight || `Consistency is the key to achieving your "${data.targetWeight || savedPlanData?.calculatedData?.targetWeight || 'goal'}" goal.`}
+                                                    </p>
                                                 </div>
                                                 <div className="flex items-center gap-3">
                                                     <button className="p-2 rounded-lg bg-[#1a1a1a] text-[#898989] hover:text-white transition-colors">

@@ -37,6 +37,7 @@ export interface AiCoachData {
         fatGrams: number;
         workoutFocus: string;
         capped: boolean;
+        personalizedInsight?: string | null;
     } | null;
 
     // Generated Plans
