@@ -226,7 +226,26 @@ export const signupUser = async (
     }
     */
 
-    // 5. Create user profile in Firestore
+    // 5. Sync user to India Shopify store (non-blocking)
+    let shopifyIndiaCustomerId: string | null = null;
+    try {
+      const indiaRes = await fetch('/api/shopify/sync-to-india', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: normalizedEmail, password, firstName, lastName }),
+      });
+      const indiaData = await indiaRes.json();
+      if (indiaData.success && indiaData.customerId) {
+        shopifyIndiaCustomerId = indiaData.customerId;
+        console.log('✓ India store customer synced:', shopifyIndiaCustomerId);
+      } else {
+        console.warn('India store sync skipped or failed:', indiaData);
+      }
+    } catch (indiaError: any) {
+      console.warn('India store sync error (non-fatal):', indiaError.message);
+    }
+
+    // 6. Create user profile in Firestore
     await setDoc(doc(db, "users", user.uid), {
       email: normalizedEmail,
       uid: user.uid,
@@ -235,6 +254,8 @@ export const signupUser = async (
       lastName,
       shopifyCustomerId: shopifyId,
       shopifyMapped: !!shopifyId,
+      shopifyIndiaCustomerId,
+      shopifyIndiaMapped: !!shopifyIndiaCustomerId,
       createdAt: new Date(),
       credits: 0, // Initialize with 0, will set to 10 after OTP verification
       otpVerified: false,

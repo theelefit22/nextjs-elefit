@@ -263,3 +263,86 @@ export const getShopifyProducts = async (first: number = 20) => {
     return [];
   }
 };
+
+// ─────────────────────────────────────────────────────────────
+// INDIA STORE — Storefront API client
+// ─────────────────────────────────────────────────────────────
+const INDIA_DOMAIN = process.env.NEXT_PUBLIC_SHOPIFY_INDIA_DOMAIN || 'nad691-1n.myshopify.com';
+const INDIA_STOREFRONT_TOKEN = process.env.NEXT_PUBLIC_SHOPIFY_INDIA_STOREFRONT_TOKEN || '';
+const INDIA_API_VERSION = '2025-01';
+
+const indiaShopifyClient = new GraphQLClient(
+  `https://${INDIA_DOMAIN}/api/${INDIA_API_VERSION}/graphql.json`,
+  {
+    headers: {
+      'X-Shopify-Storefront-Access-Token': INDIA_STOREFRONT_TOKEN,
+    },
+  }
+);
+
+/**
+ * Login a customer on the India store and return their access token
+ */
+export const loginIndiaShopifyCustomer = async (email: string, password: string) => {
+  const mutation = gql`
+    mutation customerAccessTokenCreate($input: CustomerAccessTokenCreateInput!) {
+      customerAccessTokenCreate(input: $input) {
+        customerAccessToken {
+          accessToken
+          expiresAt
+        }
+        customerUserErrors {
+          code
+          field
+          message
+        }
+      }
+    }
+  `;
+
+  try {
+    const data: any = await indiaShopifyClient.request(mutation, {
+      input: { email, password },
+    });
+    const { customerAccessTokenCreate } = data;
+
+    if (customerAccessTokenCreate.customerUserErrors.length > 0) {
+      const error = customerAccessTokenCreate.customerUserErrors[0];
+      if (error.code === 'UNIDENTIFIED_CUSTOMER') {
+        throw new Error('Email or password is incorrect');
+      }
+      throw new Error(error.message || 'India store login failed');
+    }
+
+    return customerAccessTokenCreate.customerAccessToken.accessToken as string;
+  } catch (error: any) {
+    console.error('India Shopify login error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get India store customer details by access token
+ */
+export const getIndiaCustomerByToken = async (accessToken: string) => {
+  const query = gql`
+    query getCustomer($customerAccessToken: String!) {
+      customer(customerAccessToken: $customerAccessToken) {
+        id
+        email
+        firstName
+        lastName
+        displayName
+      }
+    }
+  `;
+
+  try {
+    const data: any = await indiaShopifyClient.request(query, { customerAccessToken: accessToken });
+    if (!data.customer) throw new Error('Customer not found in India store');
+    return data.customer;
+  } catch (error: any) {
+    console.error('India Shopify get customer error:', error);
+    throw error;
+  }
+};
