@@ -98,10 +98,19 @@ function AuthContent() {
                     // Trigger context update
                     authenticate(verifiedSession);
 
-                    // Explicitly redirect after a short delay for UX
+                    // Redirect after a short delay. An UNVERIFIED user goes straight
+                    // to the OTP screen (the code was just emailed by authenticateCustomer);
+                    // a verified user continues into the coach.
                     setTimeout(() => {
-                        const redirectPath = searchParams.get('redirect') || '/ai-coach/welcome';
-                        router.replace(redirectPath);
+                        if (!result.otpVerified && !result.isEmailVerified) {
+                            router.replace(
+                                '/auth?isSignUp=true&message=' +
+                                encodeURIComponent('Enter the 6-digit code we emailed you to verify your account')
+                            );
+                        } else {
+                            const redirectPath = searchParams.get('redirect') || '/ai-coach/welcome';
+                            router.replace(redirectPath);
+                        }
                     }, 1000);
                 } else {
                     throw new Error(result.message || 'Authentication failed');

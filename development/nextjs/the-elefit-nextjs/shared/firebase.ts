@@ -343,61 +343,39 @@ export const saveSignupOTP = async (uid: string, email: string, code: string) =>
  * Unified OTP Trigger: Generates, Saves, and Sends OTP
  */
 export const triggerOTPVerification = async (email: string, uid: string) => {
-  const code = generateOTP();
-  await saveSignupOTP(uid, email, code);
-  await sendSignupOTP(email, code);
+  // Generated, stored (in the rules-locked `otps` collection) and emailed
+  // entirely server-side via the Admin SDK — client writes to `otps` are denied
+  // by the Firestore rules, which is why the old client-side path did nothing.
+  const res = await fetch("/api/send-otp-code", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email: email.trim(), uid }),
+  });
+  const data = await res.json().catch(() => null);
+  if (!res.ok || !data?.ok) {
+    throw new Error(data?.error || "Failed to send verification code");
+  }
   console.log(`✅ OTP triggered for ${email}`);
-  return code;
 };
 
 /**
  * Verify OTP and unlock account
  */
 export const verifySignupOTP = async (uid: string, code: string) => {
-  try {
-    const otpDoc = await getDoc(doc(db, "otps", uid));
-
-    if (!otpDoc.exists()) {
-      throw new Error("Invalid or expired verification code");
-    }
-
-    const data = otpDoc.data();
-    const now = Timestamp.now();
-
-    if (data.code !== code) {
-      throw new Error("Incorrect verification code");
-    }
-
-    if (now.toMillis() > data.expiresAt.toMillis()) {
-      throw new Error("Verification code has expired");
-    }
-
-    // Mark user as verified and give starting credits if they don't have them
-    const userRef = doc(db, "users", uid);
-    const userSnap = await getDoc(userRef);
-    const userData = userSnap.data();
-
-    const updateData: any = {
-      otpVerified: true,
-      isEmailVerified: true,
-      updatedAt: serverTimestamp(),
-    };
-
-    // Only give 10 credits if the user doesn't already have credits
-    if (!userData?.credits || userData.credits === 0) {
-      updateData.credits = 10;
-    }
-
-    await updateDoc(userRef, updateData);
-
-    // Clean up OTP document
-    await deleteDoc(doc(db, "otps", uid));
-
-    return true;
-  } catch (error) {
-    console.error("OTP Verification error:", error);
-    throw error;
+  // Verified server-side (Admin SDK): reads the rules-locked `otps` doc, checks
+  // the code + expiry, marks the account verified and grants 10 starting credits.
+  // The client cannot read `otps` (rules deny it), so this must go through the API.
+  const res = await fetch("/api/verify-otp", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ uid, code }),
+  });
+  const data = await res.json().catch(() => null);
+  if (!res.ok || !data?.ok) {
+    // Preserve the same user-facing messages the UI toasts on.
+    throw new Error(data?.error || "Verification failed");
   }
+  return true;
 };
 
 /**

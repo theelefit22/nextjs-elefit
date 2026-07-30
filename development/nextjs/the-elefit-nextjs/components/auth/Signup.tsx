@@ -9,8 +9,7 @@ import { Card } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Eye, EyeOff, AlertCircle, CheckCircle2, ArrowLeft } from 'lucide-react';
 import OTPVerification from './OTPVerification';
-import { generateOTP, saveSignupOTP } from '@/shared/firebase';
-import { sendSignupOTP } from '@/shared/emailService';
+import { triggerOTPVerification } from '@/shared/firebase';
 
 interface SignupProps {
     onSwitchToLogin?: () => void;
@@ -112,14 +111,8 @@ export default function Signup({ onSwitchToLogin }: SignupProps) {
             const user = await signup(email, password, 'customer', firstName, lastName);
 
             if (user) {
-                // 1. Generate OTP
-                const code = generateOTP();
-
-                // 2. Save OTP to Firestore
-                await saveSignupOTP(user.uid, email, code);
-
-                // 3. Send OTP via EmailJS
-                await sendSignupOTP(email, code);
+                // Generate, store (rules-locked `otps`) and email the code server-side.
+                await triggerOTPVerification(email, user.uid);
 
                 setSignupStep('otp');
                 setSuccess('Verification code sent to your email!');

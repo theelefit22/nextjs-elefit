@@ -8,8 +8,7 @@ import {
 } from "@/components/ui/input-otp";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { verifySignupOTP, saveSignupOTP, generateOTP } from "@/shared/firebase";
-import { sendSignupOTP } from "@/shared/emailService";
+import { verifySignupOTP, triggerOTPVerification } from "@/shared/firebase";
 import { Loader2, RefreshCw, Mail } from "lucide-react";
 
 interface OTPVerificationProps {
@@ -62,9 +61,7 @@ export default function OTPVerification({
 
     setIsResending(true);
     try {
-      const code = generateOTP();
-      await saveSignupOTP(uid, email, code);
-      await sendSignupOTP(email, code);
+      await triggerOTPVerification(email, uid);
       toast.success("New verification code sent!");
       setTimer(60);
     } catch (error: any) {
