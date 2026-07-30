@@ -76,7 +76,7 @@ function AuthContent() {
                 const { authenticateCustomer } = await import('@/shared/firebase');
                 const result = await authenticateCustomer({ email: targetEmail, customerId: targetId });
 
-                if (result.success && (result.authenticated || result.verified)) {
+                if (result.success && result.authenticated) {
                     setMessage('Welcome back! You have been automatically logged in.');
                     setMessageType('success');
 

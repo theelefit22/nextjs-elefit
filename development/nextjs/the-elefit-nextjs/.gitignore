@@ -48,3 +48,7 @@ config/shopify.yml
 shopify.app.toml
 .webpack/
 .sst/   
+# Firebase Admin service-account keys (private signing keys — never commit)
+*firebase-adminsdk*.json
+*-adminsdk-*.json
+serviceAccountKey.json

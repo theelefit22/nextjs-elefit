@@ -8,6 +8,7 @@ import {
   Auth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  signInWithCustomToken,
   signOut,
   sendPasswordResetEmail,
   onAuthStateChanged,
@@ -645,79 +646,50 @@ export const authenticateCustomer = async (customerObject: { email: string; cust
   const normalizedEmail = email.toLowerCase().trim();
 
   try {
-    // 1. Check if user exists in Firebase/Firestore
-    const usersRef = collection(db, "users");
-    const q = query(usersRef, where("email", "==", normalizedEmail));
-    const querySnapshot = await getDocs(q);
+    // 1. Ask the server to mint a Firebase CUSTOM TOKEN for this customer.
+    //    The server (Admin SDK) keys off the EMAIL — identical across both
+    //    Shopify stores — so there is no bridge-password guessing and no
+    //    per-store customerId mismatch. It also verifies the {email, customerId}
+    //    pairing and records the customerId non-destructively.
+    const res = await fetch("/api/mint-token", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: normalizedEmail, customerId }),
+    });
 
-    let uid = "";
-    let isNew = false;
+    const data = await res.json().catch(() => null);
 
-    const normalizedCustomerId = normalizeShopifyId(customerId);
-
-    if (!querySnapshot.empty) {
-      // Existing user
-      const userDoc = querySnapshot.docs[0];
-      uid = userDoc.id;
-
-      // Update customer ID if needed
-      if (userDoc.data().shopifyCustomerId !== normalizedCustomerId) {
-        await updateDoc(doc(db, "users", uid), {
-          shopifyCustomerId: normalizedCustomerId,
-          shopifyMapped: true,
-          updatedAt: new Date(),
-        });
-      }
-    } else {
-      // New user - Auto-create them using the bridge password
-      const bridgePassword = getBridgePassword(normalizedCustomerId!);
-      const shopifyCustomer = { id: normalizedCustomerId, email: normalizedEmail };
-      const mappingResult = await mapShopifyUserToFirebase(normalizedEmail, bridgePassword, shopifyCustomer);
-      uid = mappingResult.uid;
+    if (!res.ok || !data?.ok || !data?.token) {
+      const reason = data?.error || `mint-token failed (HTTP ${res.status})`;
+      console.error("authenticateCustomer: mint-token error:", reason);
+      throw new Error("We couldn't sign you in automatically. Please sign in manually.");
     }
 
-    // 3. PERFORM ACTUAL LOGIN to Firebase Auth using the bridge password
-    const bridgePassword = getBridgePassword(normalizedCustomerId!);
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, normalizedEmail, bridgePassword);
+    // 2. Establish a REAL Firebase Auth session from the custom token.
+    const userCredential = await signInWithCustomToken(auth, data.token);
+    const uid = userCredential.user.uid;
 
-      // Check if verified, if not trigger OTP
-      const profile = await getUserProfile(userCredential.user.uid);
-      if (profile && !profile.otpVerified && !profile.isEmailVerified) {
-        console.log("⚠️ Bridge login user unverified, triggering OTP...");
-        await triggerOTPVerification(normalizedEmail, userCredential.user.uid);
+    // 3. If the account still needs email verification, trigger OTP (unchanged).
+    if (!data.otpVerified && !data.isEmailVerified) {
+      try {
+        console.log("⚠️ Session-transfer user unverified, triggering OTP...");
+        await triggerOTPVerification(normalizedEmail, uid);
+      } catch (otpErr) {
+        console.warn("authenticateCustomer: OTP trigger failed (non-fatal):", otpErr);
       }
-
-      return {
-        success: true,
-        authenticated: true,
-        uid: userCredential.user.uid,
-        email: normalizedEmail,
-        shopifyCustomerId: customerId,
-        otpVerified: profile?.otpVerified || profile?.isEmailVerified || false,
-        isEmailVerified: profile?.isEmailVerified || profile?.otpVerified || false,
-        credits: profile?.credits || 0,
-        message: "Customer logged in automatically via bridge"
-      };
-    } catch (loginError: any) {
-      console.warn("Bridge login failed, falling back to verified session only:", loginError.message);
-
-      // Fetch profile anyway to get current status/credits if user exists
-      const profile = await getUserProfile(uid);
-
-      return {
-        success: true,
-        authenticated: false, // Not signed into Firebase Auth, but verified via Shopify
-        verified: true,
-        uid: uid,
-        email: normalizedEmail,
-        shopifyCustomerId: customerId,
-        otpVerified: profile?.otpVerified || profile?.isEmailVerified || false,
-        isEmailVerified: profile?.isEmailVerified || profile?.otpVerified || false,
-        credits: profile?.credits || 0,
-        message: "Customer verified via Shopify"
-      };
     }
+
+    return {
+      success: true,
+      authenticated: true,
+      uid,
+      email: normalizedEmail,
+      shopifyCustomerId: customerId,
+      otpVerified: data.otpVerified || false,
+      isEmailVerified: data.isEmailVerified || false,
+      credits: data.credits || 0,
+      message: "Customer logged in automatically via custom token",
+    };
   } catch (error: any) {
     console.error("Authentication error:", error);
     throw error;

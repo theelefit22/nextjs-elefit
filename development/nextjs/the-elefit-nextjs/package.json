@@ -47,6 +47,7 @@
     "date-fns": "^3.3.1",
     "embla-carousel-react": "^8.0.0",
     "firebase": "^10.8.0",
+    "firebase-admin": "^13.0.2",
     "framer-motion": "^11.0.8",
     "graphql": "^16.8.1",
     "graphql-request": "^6.1.0",
